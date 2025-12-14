@@ -1,6 +1,7 @@
 data/
 outputs/
 .venv/
+weights/
 __pycache__/
 *.pyc
 .env
