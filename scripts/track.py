@@ -18,7 +18,7 @@ def pick_device():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--source", required=True, help="Path a img1")
+    ap.add_argument("--source", required=True, help="Path to img1 folder")
     ap.add_argument("--tracker", required=True, help="Path YAML tracker")
     ap.add_argument("--out", required=True, help="File txt output")
     ap.add_argument("--weights", default="weights/yolov8m-640-football-players.pt")
@@ -81,7 +81,7 @@ def main():
                     break
 
             pbar.update(1)
-            if frame_idx >= 750:  # sicurezza
+            if frame_idx >= 750:
                 break
 
         pbar.close()
