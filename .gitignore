@@ -6,3 +6,4 @@ __pycache__/
 *.pyc
 .env
 .DS_Store
+SIMULATOR/lecture_example_from_training/

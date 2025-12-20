@@ -6,7 +6,7 @@ def main():
     root.mkdir(parents=True, exist_ok=True)
 
     d = SoccerNetDownloader(LocalDirectory=str(root))
-    d.downloadDataTask(task="tracking-2023", split=["train", "challenge"])
+    d.downloadDataTask(task="tracking-2023", split=["test"])
 
 if __name__ == "__main__":
     main()
