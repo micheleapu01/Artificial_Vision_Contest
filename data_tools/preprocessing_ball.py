@@ -47,13 +47,11 @@ def remove_ball_from_gt_and_copy(gameinfo_file, video_folder_path, output_folder
 
 def process_all_videos_in_test(test_folder, output_folder):
     print(f"Iniziando il processo di rimozione della palla per tutti i video in {test_folder}...")  # Debug stampa
-    new_video_id = 3  # Iniziamo a numerare i video a partire da 3
+    new_video_id = 1  # Iniziamo a numerare i video a partire da 1
     for root, dirs, files in os.walk(test_folder):
         for dir_name in dirs:
             video_folder_path = os.path.join(root, dir_name)
             gameinfo_path = os.path.join(video_folder_path, 'gameinfo.ini')
-
-            print(f"Controllando la presenza di gameinfo.ini in: {video_folder_path}")
 
             # Verifica la presenza del file gameinfo.ini nella cartella principale del video
             if os.path.exists(gameinfo_path):
@@ -61,11 +59,9 @@ def process_all_videos_in_test(test_folder, output_folder):
                 print(f"Elaborando il video {dir_name}...")
                 remove_ball_from_gt_and_copy(gameinfo_path, video_folder_path, output_folder, new_video_id)
                 new_video_id += 1  # Incrementa l'ID del video
-            else:
-                print(f"File gameinfo.ini non trovato in {video_folder_path}")  # Stampa per il debug
-
+                
 # Esegui il processo su tutta la cartella test
 test_folder_path = 'data/tracking-2023/test'
-output_folder_path = 'SIMULATOR/lecture_example_from_training/test_set/videos'
+output_folder_path = 'SIMULATOR/test_set/videos'
 
 process_all_videos_in_test(test_folder_path, output_folder_path)
