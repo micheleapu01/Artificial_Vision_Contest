@@ -19,7 +19,7 @@ def process_video(video_path, tracker, out_path, model, device, conf, iou, show,
         results = model.track(
             source=video_path,
             tracker=tracker,
-            classes=[1, 2, 3],  # player, goalkeeper, referee
+            classes=[1, 2, 3],  
             imgsz=640,
             stream=True,
             persist=True,
@@ -76,6 +76,9 @@ def main():
     ap.add_argument("--win-w", type=int, default=960)
     ap.add_argument("--win-h", type=int, default=540)
 
+    
+    ap.add_argument("--limit", type=int, default=None, help="Process only first N videos (default: all)")
+
     args = ap.parse_args()
 
     device = pick_device()
@@ -88,22 +91,29 @@ def main():
 
     test_folder = Path(args.source)
 
-    
     video_folders = sorted(
         [p for p in test_folder.iterdir() if p.is_dir() and p.name.isdigit()],
         key=lambda p: int(p.name)
     )
 
+    
+    if args.limit is not None:
+        video_folders = video_folders[:args.limit]
+
+    print(f"[INFO] Processing {len(video_folders)} videos (limit={args.limit if args.limit is not None else 'ALL'})")
+
     for video_folder in video_folders:
-        vid = int(video_folder.name)          
+        vid = int(video_folder.name)
         video_path = video_folder / "img1"
 
-        
         print(f"[INFO] Predicting from folder: {video_path}")
 
         output_txt_path = out_base_path / f"tracking_{vid}_12.txt"
-        process_video(video_path, args.tracker, output_txt_path, model, device,
-                      args.conf, args.iou, args.show, args.win_w, args.win_h)
+        process_video(
+            video_path, args.tracker, output_txt_path, model, device,
+            args.conf, args.iou, args.show, args.win_w, args.win_h
+        )
 
 if __name__ == "__main__":
     main()
+
