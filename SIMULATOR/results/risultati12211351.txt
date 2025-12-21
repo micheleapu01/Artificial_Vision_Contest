@@ -1,0 +1,315 @@
+DETECTOR: conf = 0.05, iou =0.7.
+TRACKER: botsort
+track_high_thresh: 0.5  
+track_low_thresh: 0.1  
+new_track_thresh: 0.6  
+track_buffer: 180  
+match_thresh: 0.8  
+fuse_score: True  
+gmc_method: None  
+proximity_thresh: 0.5  
+appearance_thresh: 0.2  
+with_reid: False
+
+Eval Config:
+USE_PARALLEL         : False                         
+NUM_PARALLEL_CORES   : 8                             
+BREAK_ON_ERROR       : True                          
+RETURN_ON_ERROR      : False                         
+LOG_ON_ERROR         : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/.venv/lib/python3.12/site-packages/error_log.txt
+PRINT_RESULTS        : True                          
+PRINT_ONLY_COMBINED  : False                         
+PRINT_CONFIG         : True                          
+TIME_PROGRESS        : True                          
+DISPLAY_LESS_PROGRESS : True                          
+OUTPUT_SUMMARY       : True                          
+OUTPUT_EMPTY_CLASSES : True                          
+OUTPUT_DETAILED      : True                          
+PLOT_CURVES          : True                          
+
+MotChallenge2DBox Config:
+GT_FOLDER            : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/gt
+TRACKERS_FOLDER      : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/trackers
+OUTPUT_FOLDER        : None                          
+TRACKERS_TO_EVAL     : ['test']                      
+CLASSES_TO_EVAL      : ['pedestrian']                
+BENCHMARK            : SNMOT                         
+SPLIT_TO_EVAL        : test                          
+INPUT_AS_ZIP         : False                         
+PRINT_CONFIG         : True                          
+DO_PREPROC           : False                         
+TRACKER_SUB_FOLDER   : data                          
+OUTPUT_SUB_FOLDER    : eval_results                  
+TRACKER_DISPLAY_NAMES : None                          
+SEQMAP_FOLDER        : None                          
+SEQMAP_FILE          : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/seqmaps/SNMOT-test.txt
+SEQ_INFO             : None                          
+GT_LOC_FORMAT        : {gt_folder}/{seq}/gt/gt.txt   
+SKIP_SPLIT_FOL       : False                         
+
+Evaluating 1 tracker(s) on 49 sequence(s) for 1 class(es) on MotChallenge2DBox dataset using the following metrics: HOTA, Count
+
+
+Evaluating test
+
+1 eval_sequence(1, test)                                                 0.1563 sec
+2 eval_sequence(10, test)                                                0.1398 sec
+3 eval_sequence(11, test)                                                0.1479 sec
+4 eval_sequence(12, test)                                                0.1690 sec
+5 eval_sequence(13, test)                                                0.1694 sec
+6 eval_sequence(14, test)                                                0.1531 sec
+7 eval_sequence(15, test)                                                0.1535 sec
+8 eval_sequence(16, test)                                                0.1691 sec
+9 eval_sequence(17, test)                                                0.1505 sec
+10 eval_sequence(18, test)                                                0.1550 sec
+11 eval_sequence(19, test)                                                0.1411 sec
+12 eval_sequence(2, test)                                                 0.1418 sec
+13 eval_sequence(20, test)                                                0.1592 sec
+14 eval_sequence(21, test)                                                0.1411 sec
+15 eval_sequence(22, test)                                                0.1274 sec
+16 eval_sequence(23, test)                                                0.1559 sec
+17 eval_sequence(24, test)                                                0.1499 sec
+18 eval_sequence(25, test)                                                0.1646 sec
+19 eval_sequence(26, test)                                                0.1468 sec
+20 eval_sequence(27, test)                                                0.1435 sec
+21 eval_sequence(28, test)                                                0.1345 sec
+22 eval_sequence(29, test)                                                0.1511 sec
+23 eval_sequence(3, test)                                                 0.1512 sec
+24 eval_sequence(30, test)                                                0.1406 sec
+25 eval_sequence(31, test)                                                0.1355 sec
+26 eval_sequence(32, test)                                                0.1272 sec
+27 eval_sequence(33, test)                                                0.1480 sec
+28 eval_sequence(34, test)                                                0.1545 sec
+29 eval_sequence(35, test)                                                0.1524 sec
+30 eval_sequence(36, test)                                                0.1693 sec
+31 eval_sequence(37, test)                                                0.1872 sec
+32 eval_sequence(38, test)                                                0.1600 sec
+33 eval_sequence(39, test)                                                0.1543 sec
+34 eval_sequence(4, test)                                                 0.1407 sec
+35 eval_sequence(40, test)                                                0.1620 sec
+36 eval_sequence(41, test)                                                0.1546 sec
+37 eval_sequence(42, test)                                                0.1568 sec
+38 eval_sequence(43, test)                                                0.1703 sec
+39 eval_sequence(44, test)                                                0.1689 sec
+40 eval_sequence(45, test)                                                0.1485 sec
+41 eval_sequence(46, test)                                                0.1638 sec
+42 eval_sequence(47, test)                                                0.1745 sec
+43 eval_sequence(48, test)                                                0.1613 sec
+44 eval_sequence(49, test)                                                0.1587 sec
+45 eval_sequence(5, test)                                                 0.1568 sec
+46 eval_sequence(6, test)                                                 0.1612 sec
+47 eval_sequence(7, test)                                                 0.1558 sec
+48 eval_sequence(8, test)                                                 0.1577 sec
+49 eval_sequence(9, test)                                                 0.1460 sec
+
+All sequences for test finished in 7.54 seconds
+
+HOTA: test-pedestrian              HOTA      DetA      AssA      DetRe     DetPr     AssRe     AssPr     LocA      OWTA      HOTA(0)   LocA(0)   HOTALocA(0)
+1                                  40.392    57.346    28.872    63.578    74.168    30.508    73.619    81.159    42.742    52.979    75.328    39.908    
+10                                 44.708    57.636    34.986    62.663    75.503    37.089    73.586    80.854    46.782    58.988    75.358    44.452    
+11                                 51.042    65.254    40.01     71.838    74.988    43.213    73.026    80.688    53.603    68.98     75.837    52.313    
+12                                 74.303    78.986    69.934    83.229    84.308    72.507    84.12     85.648    76.263    89.351    83.678    74.768    
+13                                 54.817    70.368    42.804    76.323    79.531    45.612    78.629    83.152    57.153    70.953    78.965    56.028    
+14                                 34.952    55.615    22.201    63.384    65.915    23.977    63.191    75.888    37.478    52.086    67.732    35.279    
+15                                 53.221    71.356    39.884    78.745    79.618    42.327    78.89     84.616    56.033    65.76     81.17     53.377    
+16                                 45.982    67.739    31.34     73.859    77.375    34.176    70.373    81.876    48.107    59.682    77.428    46.21     
+17                                 51.463    65.999    40.285    71.715    76.983    43.123    75.499    81.435    53.744    68.296    76.873    52.501    
+18                                 50.076    64.702    38.881    70.209    80.027    41.442    76.38     84.156    52.245    62.671    80.072    50.182    
+19                                 60.631    68.884    53.713    74.159    80.654    56.192    82.666    83.703    63.092    76.177    79.676    60.695    
+2                                  53.986    65.721    44.575    72.933    76.458    48.342    76.511    82.336    57.01     70.559    77.063    54.375    
+20                                 36.653    57.839    23.429    63.828    73.614    25.052    67.21     80.206    38.644    49.172    74.033    36.403    
+21                                 40.916    59.617    28.288    65.636    74.503    30.852    67.895    80.633    43.069    54.76     74.69     40.9      
+22                                 56.246    67.421    47.053    73.012    78.804    51.281    73.377    82.652    58.611    72.682    78.356    56.95     
+23                                 42.746    63.138    29.061    68.029    77.321    32.043    68.459    81.285    44.461    56.593    76.429    43.254    
+24                                 44.773    63.763    31.549    69.093    79.062    35.443    70.173    83.19     46.686    57.272    78.636    45.036    
+25                                 41.384    61.013    28.385    68.037    72.883    29.922    72.665    79.977    43.894    56.181    73.995    41.571    
+26                                 44.943    64.445    31.477    70.801    76.311    34.317    71.59     81.631    47.204    59.469    76.417    45.445    
+27                                 30.65     47.181    20.12     51.543    71.618    21.566    63.069    79.064    32.159    41.437    72.498    30.041    
+28                                 54.368    65.394    45.491    71.054    77.822    48.696    75.971    82.141    56.838    70.408    77.418    54.508    
+29                                 48.2      59.504    39.336    67.525    72.787    41.985    76.028    81.226    51.515    64.355    75.038    48.291    
+3                                  46.772    63.534    34.596    70.261    74.035    39.724    64.435    80.227    49.298    63.286    74.808    47.344    
+30                                 31.601    51.272    20.04     56.559    72.496    21.583    66.09     79.886    33.438    42.056    72.683    30.568    
+31                                 48.671    66.172    35.829    72.794    76.828    39.511    69.621    82.125    51.045    64.675    77.492    50.117    
+32                                 44.121    50.355    38.923    54.061    78.375    41.008    79.298    83.132    45.837    55.009    78.311    43.078    
+33                                 54.181    67.918    43.327    74.752    78.511    46.229    78.14     83.606    56.908    68.851    79.563    54.78     
+34                                 52.308    65.22     42.111    70.315    79.786    44.232    80.563    83.421    54.411    66.058    79.419    52.462    
+35                                 51.493    60.597    43.817    71.584    72.147    46.9      79.65     84.01     55.999    65.285    80.139    52.319    
+36                                 54.391    70.012    42.381    75.516    77.889    48.005    65.74     81.537    56.571    71.652    77.096    55.241    
+37                                 59.811    62.067    57.853    67.141    71.129    62.892    71.25     76.919    62.266    87.85     70.666    62.08     
+38                                 51.648    69.515    38.464    75.104    78.398    41.536    72.711    82.034    53.743    68.076    77.527    52.777    
+39                                 48.08     66        35.225    74.208    72.991    38.033    72.259    80.264    51.122    65.125    74.994    48.84     
+4                                  61.369    64.622    58.56     71.425    78.1      61.891    82.236    83.713    64.665    77.834    79.316    61.735    
+40                                 52.876    71.058    39.494    76.865    78.281    42.791    72.262    82.018    55.096    68.769    77.963    53.615    
+41                                 59.495    72.114    49.204    77.237    81.215    51.529    81.902    83.755    61.645    75.229    80.116    60.27     
+42                                 43.122    60.741    30.708    66.095    74.375    33.091    70.145    79.738    45.048    59.759    74.126    44.297    
+43                                 61.74     72.539    52.566    77.743    80.617    56.757    77.531    83.137    63.876    81.075    79.232    64.238    
+44                                 55.653    67.869    45.728    74.814    75.038    48.737    75.908    80.734    58.475    74.052    76.238    56.456    
+45                                 49.431    58.667    41.705    63.196    71.851    44.271    73.151    77.255    51.319    72.164    70.855    51.132    
+46                                 61.639    71.801    52.964    77.152    78.792    57.114    75.85     81.932    63.897    82.062    77.727    63.785    
+47                                 49.083    65.747    36.725    71.865    76.771    40.261    72.158    81.555    51.368    66.414    76.338    50.699    
+48                                 36.718    56.304    24.129    63.843    66.89     26.541    63.335    76.539    39.233    53.401    69.517    37.123    
+49                                 52.545    70.656    39.201    75.973    80.524    42.645    76.333    83.641    54.572    65.731    80.214    52.726    
+5                                  48.769    69.056    34.551    76.188    79.129    36.657    77.982    84.278    51.305    61.318    80.427    49.316    
+6                                  49.401    69.355    35.266    77.596    77.365    37.918    76.921    83.503    52.309    63.395    79.318    50.283    
+7                                  41.032    58.682    28.882    64.526    74.89     30.765    73.09     81.089    43.15     54.155    75.885    41.096    
+8                                  46.821    63.363    34.832    69.717    71.712    37.635    70.452    78.019    49.262    65.521    72.228    47.324    
+9                                  49.729    65.892    37.724    73.222    76.466    40.035    78.01     82.431    52.543    65.596    77.291    50.7      
+COMBINED                           50.356    64.436    39.584    70.766    76.201    42.615    74.29     81.581    52.914    66.274    76.617    50.777    
+
+Count: test-pedestrian             Dets      GT_Dets   IDs       GT_IDs    
+1                                  9203      10736     114       26        
+10                                 7184      8656      95        25        
+11                                 9417      9830      94        24        
+12                                 13655     13832     55        21        
+13                                 12773     13310     88        23        
+14                                 11193     11640     139       24        
+15                                 10739     10858     106       20        
+16                                 12731     13337     106       22        
+17                                 9937      10667     70        24        
+18                                 10290     11729     105       28        
+19                                 7696      8370      76        22        
+2                                  8048      8437      100       30        
+20                                 10240     11810     131       23        
+21                                 7536      8554      103       24        
+22                                 7664      8272      81        24        
+23                                 10696     12157     103       24        
+24                                 9204      10532     88        20        
+25                                 11766     12604     95        22        
+26                                 9046      9750      109       23        
+27                                 7415      10303     134       24        
+28                                 6257      6853      81        23        
+29                                 8766      9449      106       24        
+3                                  10035     10574     92        24        
+30                                 6952      8911      124       24        
+31                                 6351      6703      80        21        
+32                                 4109      5957      85        26        
+33                                 9028      9482      107       22        
+34                                 9176      10412     79        23        
+35                                 10424     10506     97        28        
+36                                 13557     13983     62        23        
+37                                 16160     17120     45        26        
+38                                 11560     12067     75        24        
+39                                 11165     10982     94        23        
+4                                  7319      8003      82        25        
+40                                 11401     11611     67        23        
+41                                 10330     10862     73        25        
+42                                 10960     12333     86        25        
+43                                 13907     14421     49        23        
+44                                 12686     12724     96        21        
+45                                 9368      10651     69        23        
+46                                 12839     13112     60        23        
+47                                 13081     13974     76        26        
+48                                 12653     13257     97        24        
+49                                 11085     11749     82        19        
+5                                  10649     11060     123       26        
+6                                  10738     10706     109       22        
+7                                  10036     11648     126       25        
+8                                  11467     11795     107       24        
+9                                  8577      8957      86        24        
+COMBINED                           497069    535246    4507      1162      
+
+=== TrackEval (SoccerNet-style) HOTA@0.50 ===
+HOTA@0.50: 0.617476
+
+--- Checking behavior files ---
+MISSING GT behavior: lecture_example_from_training/test_set/videos/1/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_1_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/2/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_2_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/3/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_3_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/4/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_4_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/5/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_5_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/6/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_6_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/7/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_7_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/8/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_8_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/9/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_9_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/10/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_10_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/11/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_11_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/12/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_12_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/13/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_13_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/14/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_14_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/15/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_15_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/16/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_16_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/17/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_17_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/18/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_18_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/19/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_19_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/20/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_20_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/21/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_21_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/22/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_22_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/23/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_23_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/24/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_24_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/25/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_25_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/26/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_26_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/27/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_27_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/28/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_28_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/29/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_29_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/30/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_30_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/31/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_31_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/32/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_32_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/33/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_33_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/34/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_34_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/35/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_35_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/36/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_36_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/37/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_37_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/38/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_38_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/39/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_39_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/40/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_40_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/41/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_41_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/42/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_42_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/43/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_43_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/44/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_44_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/45/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_45_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/46/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_46_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/47/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_47_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/48/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_48_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/49/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_49_12.txt
+Missing count: 98
+Behavior missing -> nMAE not computed (PTBS = HOTA@0.50)
+PTBS: 0.617476

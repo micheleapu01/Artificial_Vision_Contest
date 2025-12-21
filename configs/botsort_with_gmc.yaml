@@ -3,7 +3,7 @@ track_high_thresh: 0.5
 track_low_thresh: 0.10
 new_track_thresh: 0.6
 track_buffer: 180
-match_thresh: 0.75   # oppure 0.7 se ancora frammenta
+match_thresh: 0.75   
 fuse_score: True
 gmc_method: sparseOptFlow
 proximity_thresh: 0.5

@@ -86,16 +86,24 @@ def main():
     out_base_path = Path(args.out)
     out_base_path.mkdir(parents=True, exist_ok=True)
 
-    video_id = 1  # Start numbering from 1
-
-    # Process all subfolders in the test folder
     test_folder = Path(args.source)
-    for video_folder in test_folder.iterdir():
-        if video_folder.is_dir():
-            video_path = video_folder / 'img1'
-            output_txt_path = out_base_path / f"tracking_{video_id}_12.txt"
-            process_video(video_path, args.tracker, output_txt_path, model, device, args.conf, args.iou, args.show, args.win_w, args.win_h)
-            video_id += 1  # Increment video ID
+
+    
+    video_folders = sorted(
+        [p for p in test_folder.iterdir() if p.is_dir() and p.name.isdigit()],
+        key=lambda p: int(p.name)
+    )
+
+    for video_folder in video_folders:
+        vid = int(video_folder.name)          
+        video_path = video_folder / "img1"
+
+        
+        print(f"[INFO] Predicting from folder: {video_path}")
+
+        output_txt_path = out_base_path / f"tracking_{vid}_12.txt"
+        process_video(video_path, args.tracker, output_txt_path, model, device,
+                      args.conf, args.iou, args.show, args.win_w, args.win_h)
 
 if __name__ == "__main__":
     main()
