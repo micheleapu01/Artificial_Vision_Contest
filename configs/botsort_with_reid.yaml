@@ -1,6 +1,6 @@
 tracker_type: botsort
 with_reid: True
-model: weights/yolo11m-cls.pt
+model: auto
 
 track_high_thresh: 0.60
 track_low_thresh: 0.15
@@ -11,4 +11,4 @@ fuse_score: True
 gmc_method: sparseOptFlow
 
 proximity_thresh: 0.45
-appearance_thresh: 0.40
+appearance_thresh: 0.60
