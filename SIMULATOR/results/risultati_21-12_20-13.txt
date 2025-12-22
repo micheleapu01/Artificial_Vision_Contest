@@ -13,6 +13,8 @@ gmc_method: sparseOptFlow
 proximity_thresh: 0.45
 appearance_thresh: 0.60
 
+iou= 0.55
+conf=0.15
 
 Eval Config:
 USE_PARALLEL         : False                         
