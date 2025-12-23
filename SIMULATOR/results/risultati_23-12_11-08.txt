@@ -1,0 +1,175 @@
+tracker_type: botsort
+with_reid: False
+
+track_high_thresh: 0.6
+track_low_thresh: 0.15
+new_track_thresh: 0.7
+track_buffer: 120
+match_thresh: 0.8
+fuse_score: True
+proximity_thresh: 0.5
+appearance_thresh: 0.25
+
+gmc_method: orb
+
+iou=0.55 
+conf=0.15
+
+
+Eval Config:
+USE_PARALLEL         : False                         
+NUM_PARALLEL_CORES   : 8                             
+BREAK_ON_ERROR       : True                          
+RETURN_ON_ERROR      : False                         
+LOG_ON_ERROR         : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/.venv/lib/python3.12/site-packages/error_log.txt
+PRINT_RESULTS        : True                          
+PRINT_ONLY_COMBINED  : False                         
+PRINT_CONFIG         : True                          
+TIME_PROGRESS        : True                          
+DISPLAY_LESS_PROGRESS : True                          
+OUTPUT_SUMMARY       : True                          
+OUTPUT_EMPTY_CLASSES : True                          
+OUTPUT_DETAILED      : True                          
+PLOT_CURVES          : True                          
+
+MotChallenge2DBox Config:
+GT_FOLDER            : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/gt
+TRACKERS_FOLDER      : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/trackers
+OUTPUT_FOLDER        : None                          
+TRACKERS_TO_EVAL     : ['test']                      
+CLASSES_TO_EVAL      : ['pedestrian']                
+BENCHMARK            : SNMOT                         
+SPLIT_TO_EVAL        : test                          
+INPUT_AS_ZIP         : False                         
+PRINT_CONFIG         : True                          
+DO_PREPROC           : False                         
+TRACKER_SUB_FOLDER   : data                          
+OUTPUT_SUB_FOLDER    : eval_results                  
+TRACKER_DISPLAY_NAMES : None                          
+SEQMAP_FOLDER        : None                          
+SEQMAP_FILE          : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/seqmaps/SNMOT-test.txt
+SEQ_INFO             : None                          
+GT_LOC_FORMAT        : {gt_folder}/{seq}/gt/gt.txt   
+SKIP_SPLIT_FOL       : False                         
+
+Evaluating 1 tracker(s) on 20 sequence(s) for 1 class(es) on MotChallenge2DBox dataset using the following metrics: HOTA, Count
+
+
+Evaluating test
+
+1 eval_sequence(1, test)                                                 0.1593 sec
+2 eval_sequence(10, test)                                                0.1441 sec
+3 eval_sequence(11, test)                                                0.1544 sec
+4 eval_sequence(12, test)                                                0.1745 sec
+5 eval_sequence(13, test)                                                0.1778 sec
+6 eval_sequence(14, test)                                                0.1592 sec
+7 eval_sequence(15, test)                                                0.1608 sec
+8 eval_sequence(16, test)                                                0.1679 sec
+9 eval_sequence(17, test)                                                0.1608 sec
+10 eval_sequence(18, test)                                                0.1598 sec
+11 eval_sequence(19, test)                                                0.1465 sec
+12 eval_sequence(2, test)                                                 0.1472 sec
+13 eval_sequence(20, test)                                                0.1642 sec
+14 eval_sequence(3, test)                                                 0.1538 sec
+15 eval_sequence(4, test)                                                 0.1444 sec
+16 eval_sequence(5, test)                                                 0.1595 sec
+17 eval_sequence(6, test)                                                 0.1573 sec
+18 eval_sequence(7, test)                                                 0.1613 sec
+19 eval_sequence(8, test)                                                 0.1603 sec
+20 eval_sequence(9, test)                                                 0.1493 sec
+
+All sequences for test finished in 3.16 seconds
+
+HOTA: test-pedestrian              HOTA      DetA      AssA      DetRe     DetPr     AssRe     AssPr     LocA      OWTA      HOTA(0)   LocA(0)   HOTALocA(0)
+1                                  43.337    56.228    33.7      61.768    74.83     37.125    69.615    81.046    45.581    59.065    74.479    43.991    
+10                                 49.384    58.666    41.788    63.402    76.564    44.378    75.668    81.125    51.463    65.935    75.446    49.745    
+11                                 58.366    66.758    51.104    72.333    76.291    54.509    76.337    80.557    60.777    79.946    75.498    60.357    
+12                                 74.712    79.424    70.314    82.79     85.319    72.588    86.332    85.7      76.268    89.921    83.795    75.349    
+13                                 62.559    71.055    55.105    76.672    80.152    59.521    78.724    83.222    64.955    82.934    78.873    65.413    
+14                                 37.31     55.692    25.153    61.39     68.499    27.687    62.11     76.022    39.283    56.288    68.21     38.394    
+15                                 61.197    72.282    51.932    77.619    82.087    55.062    80.434    84.693    63.488    76.52     81.308    62.217    
+16                                 54.056    67.423    43.431    72.448    78.709    46.43     73.385    82.07     56.089    70.587    77.83     54.938    
+17                                 54.3      65.699    44.984    71.213    76.987    49.71     72.7      81.209    56.585    73.899    76.231    56.334    
+18                                 54.162    65.5      44.84     70.258    81.437    48.838    76.31     84.401    56.122    68.944    80.433    55.453    
+19                                 65.475    70.914    60.704    76.864    80.189    64.398    81.756    83.531    68.304    85.047    78.797    67.015    
+2                                  56.643    66.741    48.272    73.096    77.56     51.114    80.111    82.224    59.399    75.453    76.669    57.849    
+20                                 42.782    58.287    31.555    64.252    73.614    33.966    70.83     79.967    45.022    60.319    72.962    44.01     
+3                                  56.131    66.751    47.291    73.184    74.914    51.402    73.423    80.051    58.819    78.534    74.167    58.246    
+4                                  63.368    67.835    59.431    74.036    79.545    63.295    81.209    83.699    66.331    81.269    79.145    64.321    
+5                                  55.351    70.741    43.381    77.256    80.117    46.323    77.296    84.16     57.885    71.028    80.018    56.835    
+6                                  61.117    70.201    53.241    76.427    79.649    57.09     79.771    83.457    63.754    80.201    79.083    63.426    
+7                                  47.845    61.811    37.146    67.487    76.096    39.611    75.183    81.207    50.066    64.813    75.589    48.991    
+8                                  52.601    64.393    43.106    69.693    72.953    47.118    69.488    77.923    54.804    75.481    72.016    54.359    
+9                                  53.368    66.758    42.786    73.925    76.601    45.762    78.138    82.092    56.226    72.732    76.376    55.55     
+COMBINED                           55.851    66.09     47.424    71.896    77.744    50.876    76.761    82.037    58.384    73.919    76.967    56.893    
+
+Count: test-pedestrian             Dets      GT_Dets   IDs       GT_IDs    
+1                                  8862      10736     75        26        
+10                                 7168      8656      59        25        
+11                                 9320      9830      56        24        
+12                                 13422     13832     34        21        
+13                                 12732     13310     48        23        
+14                                 10432     11640     84        24        
+15                                 10267     10858     62        20        
+16                                 12276     13337     69        22        
+17                                 9867      10667     47        24        
+18                                 10119     11729     66        28        
+19                                 8023      8370      39        22        
+2                                  7908      8391      61        29        
+20                                 10308     11810     74        23        
+3                                  9895      10129     52        23        
+4                                  7217      7754      51        24        
+5                                  10665     11060     78        26        
+6                                  10273     10706     65        22        
+7                                  9666      10899     76        24        
+8                                  11268     11795     57        24        
+9                                  8644      8957      56        24        
+COMBINED                           198332    214466    1209      478       
+
+=== TrackEval (SoccerNet-style) HOTA@0.50 ===
+HOTA@0.50: 0.671701
+
+--- Checking behavior files ---
+MISSING GT behavior: lecture_example_from_training/test_set/videos/1/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_1_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/2/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_2_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/3/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_3_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/4/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_4_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/5/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_5_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/6/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_6_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/7/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_7_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/8/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_8_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/9/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_9_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/10/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_10_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/11/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_11_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/12/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_12_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/13/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_13_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/14/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_14_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/15/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_15_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/16/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_16_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/17/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_17_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/18/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_18_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/19/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_19_12.txt
+MISSING GT behavior: lecture_example_from_training/test_set/videos/20/gt/behavior_gt.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_20_12.txt
+Missing count: 40
+Behavior missing -> nMAE not computed (PTBS = HOTA@0.50)
+PTBS: 0.671701
