@@ -76,7 +76,6 @@ def generate_gt_behavior(video_folder: Path):
 
     sorted_frames = sorted(per_frame_counts.keys())
     
-    # Assicurati che la cartella gt esista (dovrebbe già esserci)
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     with output_file.open("w", encoding="utf-8") as out:
@@ -89,7 +88,6 @@ def generate_gt_behavior(video_folder: Path):
     print(f"{video_folder.name}: Generato {output_file.name}")
 
 def main():
-    # Percorso default basato sulla tua struttura cartelle
     default_path = "SIMULATOR/lecture_example_from_training/test_set/videos"
     
     parser = argparse.ArgumentParser(description="Genera Ground Truth per il Behavior partendo dal Tracking GT.")
