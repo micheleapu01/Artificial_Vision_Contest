@@ -41,51 +41,110 @@ def build_field_mask(
     area_min_ratio: float,
     area_max_ratio: float,
 ) -> np.ndarray | None:
-    """Mask (0/255) della componente verde più grande (= campo)."""
+    """
+    Campo = TUTTE le aree realmente verdi (anche fuori dalle linee bianche),
+    escludendo cemento/grigio e falsi verdi.
+    Strategia:
+      - HSV green (ma con S più severa)
+      - + indice ExG (green-dominant) per eliminare grigi/verdi finti
+      - scegli la componente che TOCCA il bordo basso (evita cartelloni)
+    """
     h0, w0 = bgr.shape[:2]
     if scale != 1.0:
-        bgr_s = cv2.resize(bgr, (int(w0 * scale), int(h0 * scale)), interpolation=cv2.INTER_AREA)
+        img = cv2.resize(bgr, (int(w0 * scale), int(h0 * scale)), interpolation=cv2.INTER_AREA)
     else:
-        bgr_s = bgr
+        img = bgr
 
-    hsv = cv2.cvtColor(bgr_s, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, np.array(hsv_low, np.uint8), np.array(hsv_high, np.uint8))
+    hs, ws = img.shape[:2]
+    total = float(hs * ws)
 
-    if k_close > 1:
-        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_close, k_close))
-        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    H, S, V = cv2.split(hsv)
+
+    # ----------------------------
+    # 1) HSV GREEN (stringi S per buttare fuori cemento/grigi)
+    # ----------------------------
+    hL, sL, vL = hsv_low
+    hH, sH, vH = hsv_high
+
+    # Critico: non usare sL troppo basso (40 è troppo poco)
+    s_min = max(int(sL), 70)   # <- chiave anti-cemento
+    v_min = max(int(vL), 35)
+
+    hsv_mask = cv2.inRange(
+        hsv,
+        np.array([hL, s_min, v_min], np.uint8),
+        np.array([hH, 255, 255], np.uint8),
+    )
+
+    # ----------------------------
+    # 2) ExG (Excess Green) per eliminare falsi verdi/grigi illuminati
+    # ExG = 2G - R - B
+    # ----------------------------
+    b, g, r = cv2.split(img)
+    exg = (2 * g.astype(np.int16) - r.astype(np.int16) - b.astype(np.int16))
+    exg = np.clip(exg, -255, 255)
+
+    # soglia: abbastanza permissiva da tenere prato in ombra, ma tagliare cemento
+    exg_mask = (exg > 20).astype(np.uint8) * 255
+
+    green = cv2.bitwise_and(hsv_mask, exg_mask)
+
+    # ----------------------------
+    # 3) Morfologia (NON spalmare sul cemento!)
+    # ----------------------------
     if k_open > 1:
         k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_open, k_open))
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k)
+        green = cv2.morphologyEx(green, cv2.MORPH_OPEN, k)
+    if k_close > 1:
+        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_close, k_close))
+        green = cv2.morphologyEx(green, cv2.MORPH_CLOSE, k)
+    # dilate solo se proprio serve (meglio disattivarlo = 1)
     if k_dilate > 1:
         k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_dilate, k_dilate))
-        mask = cv2.dilate(mask, k, iterations=1)
+        green = cv2.dilate(green, k, iterations=1)
 
-    cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    if not cnts:
+    green_bin = (green > 0).astype(np.uint8)
+
+    # ----------------------------
+    # 4) Connected Components: prendi quella che tocca il bordo basso
+    # ----------------------------
+    num, lab, stats, _ = cv2.connectedComponentsWithStats(green_bin, 8)
+    if num <= 1:
         return None
 
-    # scegli un contorno plausibile: area ok + copre il centro (di solito il campo sta al centro)
-    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
-    hs, ws = mask.shape[:2]
-    cx0, cy0 = ws // 2, hs // 2
+    bottom_labels = set(lab[hs - 1, :].tolist())
+    bottom_labels.discard(0)
 
-    for c in cnts[:5]:
-        field = np.zeros_like(mask)
-        cv2.drawContours(field, [c], -1, 255, thickness=cv2.FILLED)
+    # se per qualche motivo non tocca l'ultimo pixel, guarda poco sopra
+    if not bottom_labels:
+        yb = int(0.95 * (hs - 1))
+        bottom_labels = set(lab[yb, :].tolist())
+        bottom_labels.discard(0)
 
-        area = float(cv2.countNonZero(field))
-        total = float(field.shape[0] * field.shape[1])
+    candidates = bottom_labels if bottom_labels else set(range(1, num))
+
+    best = None
+    best_area = -1
+    for lid in candidates:
+        area = int(stats[lid, cv2.CC_STAT_AREA])
         ratio = area / max(total, 1.0)
         if ratio < area_min_ratio or ratio > area_max_ratio:
             continue
+        if area > best_area:
+            best_area = area
+            best = lid
 
-        if field[cy0, cx0] == 0:
-            continue
+    if best is None:
+        return None
 
-        return field
+    field = (lab == best).astype(np.uint8) * 255
 
-    return None
+    # chiudi piccoli buchi
+    ksmall = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    field = cv2.morphologyEx(field, cv2.MORPH_CLOSE, ksmall)
+
+    return field
 
 
 def keep_by_field(

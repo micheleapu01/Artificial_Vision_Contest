@@ -1,0 +1,83 @@
+
+Eval Config:
+USE_PARALLEL         : False                         
+NUM_PARALLEL_CORES   : 8                             
+BREAK_ON_ERROR       : True                          
+RETURN_ON_ERROR      : False                         
+LOG_ON_ERROR         : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/.venv/lib/python3.12/site-packages/error_log.txt
+PRINT_RESULTS        : True                          
+PRINT_ONLY_COMBINED  : False                         
+PRINT_CONFIG         : True                          
+TIME_PROGRESS        : True                          
+DISPLAY_LESS_PROGRESS : True                          
+OUTPUT_SUMMARY       : True                          
+OUTPUT_EMPTY_CLASSES : True                          
+OUTPUT_DETAILED      : True                          
+PLOT_CURVES          : True                          
+
+MotChallenge2DBox Config:
+GT_FOLDER            : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/gt
+TRACKERS_FOLDER      : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/trackers
+OUTPUT_FOLDER        : None                          
+TRACKERS_TO_EVAL     : ['test']                      
+CLASSES_TO_EVAL      : ['pedestrian']                
+BENCHMARK            : SNMOT                         
+SPLIT_TO_EVAL        : test                          
+INPUT_AS_ZIP         : False                         
+PRINT_CONFIG         : True                          
+DO_PREPROC           : False                         
+TRACKER_SUB_FOLDER   : data                          
+OUTPUT_SUB_FOLDER    : eval_results                  
+TRACKER_DISPLAY_NAMES : None                          
+SEQMAP_FOLDER        : None                          
+SEQMAP_FILE          : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/seqmaps/SNMOT-test.txt
+SEQ_INFO             : None                          
+GT_LOC_FORMAT        : {gt_folder}/{seq}/gt/gt.txt   
+SKIP_SPLIT_FOL       : False                         
+
+Evaluating 1 tracker(s) on 8 sequence(s) for 1 class(es) on MotChallenge2DBox dataset using the following metrics: HOTA, Count
+
+
+Evaluating test
+
+1 eval_sequence(12, test)                                                0.1787 sec
+2 eval_sequence(20, test)                                                0.1655 sec
+3 eval_sequence(27, test)                                                0.1622 sec
+4 eval_sequence(3, test)                                                 0.1639 sec
+5 eval_sequence(37, test)                                                0.1901 sec
+6 eval_sequence(4, test)                                                 0.1457 sec
+7 eval_sequence(48, test)                                                0.1756 sec
+8 eval_sequence(6, test)                                                 0.1640 sec
+
+All sequences for test finished in 1.35 seconds
+
+HOTA: test-pedestrian              HOTA      DetA      AssA      DetRe     DetPr     AssRe     AssPr     LocA      OWTA      HOTA(0)   LocA(0)   HOTALocA(0)
+12                                 83.89     86.114    81.734    89.922    89.219    83.867    90.909    89.518    85.69     94.966    88.53     84.074    
+20                                 43.372    61.199    30.899    76.394    67.49     34.871    64.794    82.267    48.575    57.128    76.757    43.85     
+27                                 39.845    57.617    27.766    75.279    63.945    32.483    55.198    82.077    45.692    52.673    75.467    39.751    
+3                                  66.854    73.751    60.656    82.688    78.939    67.602    74.298    85.033    70.804    83.409    81.798    68.227    
+37                                 63.904    63.101    65.203    70.805    68.5      71.116    72.61     76.826    67.809    93.858    70.557    66.223    
+4                                  76.156    75.924    76.427    85.015    81.173    80.543    86.225    87.246    80.585    91.254    84.79     77.374    
+48                                 38.326    52.526    28.053    72.958    56.891    31.853    60.817    78.886    45.234    54.487    72.323    39.407    
+6                                  67.954    72.15     64.037    80.255    76.859    68.889    78.395    82.745    71.647    88.318    79.186    69.936    
+COMBINED                           60.865    65.916    56.698    78.568    71.67     61.397    75.024    82.802    66.687    78.279    78.07     61.112    
+
+Count: test-pedestrian             Dets      GT_Dets   IDs       GT_IDs    
+12                                 13941     13832     31        21        
+20                                 13368     11810     94        23        
+27                                 12129     10303     91        24        
+3                                  10610     10129     55        23        
+37                                 17696     17120     50        26        
+4                                  8121      7754      61        24        
+48                                 17001     13257     120       24        
+6                                  11179     10706     62        22        
+COMBINED                           104045    94911     564       187       
+
+=== TrackEval (SoccerNet-style) HOTA@0.50 ===
+HOTA@0.50: 0.730684
+
+--- Checking behavior files ---
+Missing count: 0
+MAE:  0.630167
+nMAE: 0.936983
+PTBS: 1.667667

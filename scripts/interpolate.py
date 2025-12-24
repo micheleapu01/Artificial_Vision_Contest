@@ -102,7 +102,7 @@ def main():
     parser.add_argument("--folder", default="SIMULATOR/lecture_example_from_training/Predictions_folder", help="Cartella txt")
     parser.add_argument("--gap", type=int, default=20, help="Max frame gap to fill")
     parser.add_argument("--conf", type=float, default=0.4, help="Confidence value for interpolated frames (default: 0.4)")
-    
+    parser.add_argument("--pattern", default="tracking*.txt", help="Pattern file da processare (default: tracking*.txt)")
     args = parser.parse_args()
 
     target_dir = args.folder
@@ -111,7 +111,7 @@ def main():
         print(f" Cartella non trovata: {target_dir}")
         return
 
-    txt_files = glob.glob(os.path.join(target_dir, "*.txt"))
+    txt_files = glob.glob(os.path.join(target_dir, args.pattern))
     print(f" Avvio interpolazione su {len(txt_files)} file...")
     print(f"    Params: Max Gap={args.gap}, Interp Conf={args.conf}")
     

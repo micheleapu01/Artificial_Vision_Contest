@@ -132,8 +132,7 @@ def process_video(video_path, tracker, out_path, model, device, conf, iou, show,
         results = model.track(
             source=video_path,
             tracker=tracker,
-            classes=[1, 2, 3],
-            imgsz=640,
+            imgsz=1280,
             stream=True,
             persist=True,
             device=device,
@@ -184,7 +183,7 @@ def main():
     ap.add_argument("--tracker", required=True, help="Path YAML tracker")
     ap.add_argument("--out", required=True, help="Output folder for txt files")
 
-    ap.add_argument("--weights", default="weights/yolov8m-640-football-players.pt")
+    ap.add_argument("--weights", default="weights/train_yolo11m_SoccerNet.pt")
     ap.add_argument("--conf", type=float, default=0.15)
     ap.add_argument("--iou", type=float, default=0.55)
 

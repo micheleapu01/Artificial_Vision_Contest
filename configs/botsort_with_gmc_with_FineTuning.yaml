@@ -1,6 +1,6 @@
 tracker_type: botsort
 track_high_thresh: 0.60   # <--- MODIFICATO (Era 0.6)
-track_low_thresh: 0.20    # <--- MODIFICATO (Era 0.15)
+track_low_thresh: 0.09    # <--- MODIFICATO (Era 0.15)
 new_track_thresh: 0.65   # <--- MODIFICATO (Era 0.7)
 track_buffer: 100        # OTTIMO (4 secondi di memoria per occlusioni)
 match_thresh: 0.85        # Va bene, ma se perdi ID sui scatti veloci abbassa a 0.7

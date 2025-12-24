@@ -216,7 +216,7 @@ def main():
     p.add_argument("--folder", required=True, help="Cartella con predizioni MOT da stitchare")
     p.add_argument("--w", type=int, default=1920)
     p.add_argument("--h", type=int, default=1080)
-
+    p.add_argument("--pattern", default="tracking*.txt", help="Pattern file da processare (default: tracking*.txt)")
     p.add_argument("--max-gap", type=int, default=15)
     p.add_argument("--min-len", type=int, default=8)
     p.add_argument("--K", type=int, default=8)
@@ -233,7 +233,7 @@ def main():
     if not os.path.isdir(args.folder):
         raise SystemExit(f" Cartella non trovata: {args.folder}")
 
-    files = glob.glob(os.path.join(args.folder, "*.txt"))
+    files = glob.glob(os.path.join(args.folder, args.pattern))
     print(f" Stitching INPLACE su {len(files)} file (nessun backup)...")
     print(f"   Params: max_gap={args.max_gap}, min_len={args.min_len}, border_frac={args.border_frac}")
     print(f"           dist_base={args.dist_base}, dist_per_gap={args.dist_per_gap}, size_gate={args.size_log_gate}")
