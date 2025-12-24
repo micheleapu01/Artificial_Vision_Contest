@@ -1,0 +1,220 @@
+tracker_type: botsort
+track_high_thresh: 0.60   # <--- MODIFICATO (Era 0.6)
+track_low_thresh: 0.15    # <--- MODIFICATO (Era 0.15)
+new_track_thresh: 0.42   # <--- MODIFICATO (Era 0.7)
+track_buffer: 90        # OTTIMO (4 secondi di memoria per occlusioni)
+match_thresh: 0.72       # Va bene, ma se perdi ID sui scatti veloci abbassa a 0.7
+fuse_score: False         # OK
+gmc_method: sparseOptFlow # FONDAMENTALE per il calcio (compensa la telecamera)
+proximity_thresh: 0.45    # <--- MODIFICATO (Era 0.45)
+appearance_thresh: 0.2   # Ininfluente con with_reid: False
+with_reid: False         # <--- Confermato
+-conf 0.15 \
+--iou 0.6  
+SU 50 VIDEO
+
+Eval Config:
+USE_PARALLEL         : False                         
+NUM_PARALLEL_CORES   : 8                             
+BREAK_ON_ERROR       : True                          
+RETURN_ON_ERROR      : False                         
+LOG_ON_ERROR         : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/.venv/lib/python3.12/site-packages/error_log.txt
+PRINT_RESULTS        : True                          
+PRINT_ONLY_COMBINED  : False                         
+PRINT_CONFIG         : True                          
+TIME_PROGRESS        : True                          
+DISPLAY_LESS_PROGRESS : True                          
+OUTPUT_SUMMARY       : True                          
+OUTPUT_EMPTY_CLASSES : True                          
+OUTPUT_DETAILED      : True                          
+PLOT_CURVES          : True                          
+
+MotChallenge2DBox Config:
+GT_FOLDER            : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/gt
+TRACKERS_FOLDER      : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/trackers
+OUTPUT_FOLDER        : None                          
+TRACKERS_TO_EVAL     : ['test']                      
+CLASSES_TO_EVAL      : ['pedestrian']                
+BENCHMARK            : SNMOT                         
+SPLIT_TO_EVAL        : test                          
+INPUT_AS_ZIP         : False                         
+PRINT_CONFIG         : True                          
+DO_PREPROC           : False                         
+TRACKER_SUB_FOLDER   : data                          
+OUTPUT_SUB_FOLDER    : eval_results                  
+TRACKER_DISPLAY_NAMES : None                          
+SEQMAP_FOLDER        : None                          
+SEQMAP_FILE          : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/seqmaps/SNMOT-test.txt
+SEQ_INFO             : None                          
+GT_LOC_FORMAT        : {gt_folder}/{seq}/gt/gt.txt   
+SKIP_SPLIT_FOL       : False                         
+
+Evaluating 1 tracker(s) on 49 sequence(s) for 1 class(es) on MotChallenge2DBox dataset using the following metrics: HOTA, Count
+
+
+Evaluating test
+
+1 eval_sequence(1, test)                                                 0.1546 sec
+2 eval_sequence(10, test)                                                0.1423 sec
+3 eval_sequence(11, test)                                                0.1497 sec
+4 eval_sequence(12, test)                                                0.1698 sec
+5 eval_sequence(13, test)                                                0.1721 sec
+6 eval_sequence(14, test)                                                0.1565 sec
+7 eval_sequence(15, test)                                                0.1561 sec
+8 eval_sequence(16, test)                                                0.1738 sec
+9 eval_sequence(17, test)                                                0.1526 sec
+10 eval_sequence(18, test)                                                0.1567 sec
+11 eval_sequence(19, test)                                                0.1435 sec
+12 eval_sequence(2, test)                                                 0.1434 sec
+13 eval_sequence(20, test)                                                0.1573 sec
+14 eval_sequence(21, test)                                                0.1405 sec
+15 eval_sequence(22, test)                                                0.1353 sec
+16 eval_sequence(23, test)                                                0.1538 sec
+17 eval_sequence(24, test)                                                0.1460 sec
+18 eval_sequence(25, test)                                                0.1626 sec
+19 eval_sequence(26, test)                                                0.1463 sec
+20 eval_sequence(27, test)                                                0.1442 sec
+21 eval_sequence(28, test)                                                0.1323 sec
+22 eval_sequence(29, test)                                                0.1477 sec
+23 eval_sequence(3, test)                                                 0.1476 sec
+24 eval_sequence(30, test)                                                0.1357 sec
+25 eval_sequence(31, test)                                                0.1342 sec
+26 eval_sequence(32, test)                                                0.1246 sec
+27 eval_sequence(33, test)                                                0.1461 sec
+28 eval_sequence(34, test)                                                0.1532 sec
+29 eval_sequence(35, test)                                                0.1522 sec
+30 eval_sequence(36, test)                                                0.1689 sec
+31 eval_sequence(37, test)                                                0.1858 sec
+32 eval_sequence(38, test)                                                0.1594 sec
+33 eval_sequence(39, test)                                                0.1544 sec
+34 eval_sequence(4, test)                                                 0.1407 sec
+35 eval_sequence(40, test)                                                0.1635 sec
+36 eval_sequence(41, test)                                                0.1535 sec
+37 eval_sequence(42, test)                                                0.1568 sec
+38 eval_sequence(43, test)                                                0.1714 sec
+39 eval_sequence(44, test)                                                0.1704 sec
+40 eval_sequence(45, test)                                                0.1481 sec
+41 eval_sequence(46, test)                                                0.1636 sec
+42 eval_sequence(47, test)                                                0.1728 sec
+43 eval_sequence(48, test)                                                0.1616 sec
+44 eval_sequence(49, test)                                                0.1587 sec
+45 eval_sequence(5, test)                                                 0.1532 sec
+46 eval_sequence(6, test)                                                 0.1599 sec
+47 eval_sequence(7, test)                                                 0.1566 sec
+48 eval_sequence(8, test)                                                 0.1606 sec
+49 eval_sequence(9, test)                                                 0.1479 sec
+
+All sequences for test finished in 7.54 seconds
+
+HOTA: test-pedestrian              HOTA      DetA      AssA      DetRe     DetPr     AssRe     AssPr     LocA      OWTA      HOTA(0)   LocA(0)   HOTALocA(0)
+1                                  56.376    69.207    46.135    72.956    83.387    50.137    76.296    84.809    57.99     69.283    81.766    56.65     
+10                                 56.284    69.048    46.008    72.88     83.633    48.846    78.04     85.09     57.902    68.811    81.998    56.423    
+11                                 64.33     77.077    53.715    79.937    87.309    56.465    85.161    87.084    65.506    75.857    85.439    64.812    
+12                                 82.585    86.071    79.254    88.567    90.564    82.302    87.025    89.57     83.746    93.24     88.639    82.648    
+13                                 62.612    72.347    54.221    76.351    80.878    57.938    76.534    82.749    64.317    80.354    79.51     63.889    
+14                                 58.626    76.038    45.242    79.482    82.886    50.947    69.224    83.847    59.953    72.932    81.26     59.265    
+15                                 71.634    82.436    62.283    85.747    88.359    66.226    82.592    88.035    73.062    83.438    86.454    72.136    
+16                                 64.319    79.974    51.772    83.654    86.488    56.954    75.581    86.758    65.797    76.403    84.696    64.71     
+17                                 63.304    73.543    54.542    77.595    83.921    56.971    85.185    85.105    65.037    78.568    82.256    64.627    
+18                                 62.764    72.277    54.56     76.325    83.868    57.513    81.634    85.405    64.523    76.637    82.746    63.414    
+19                                 66.518    73.679    60.134    78.632    83.713    63.526    83.359    85.826    68.758    81.258    82.884    67.35     
+2                                  70.717    76.579    65.35     80.368    85.504    68.176    86.213    86.215    72.452    85.491    83.849    71.683    
+20                                 47.044    64.913    34.203    69.366    80.568    37.138    73.808    83.376    48.707    60.283    79.094    47.68     
+21                                 60.162    71.975    50.336    76.894    81.819    54.139    76.543    84.335    62.2      75.533    81.155    61.299    
+22                                 62.685    73.101    53.813    77.053    84.433    59.549    72.726    85.78     64.385    75.636    83.481    63.142    
+23                                 51.797    70.991    37.845    75.157    82.404    39.727    80.222    84.113    53.325    64.998    80.811    52.525    
+24                                 57.627    73.33     45.336    77.935    83.884    48        76.471    85.65     59.43     71.176    82.289    58.57     
+25                                 50.05     72.81     34.525    77.799    82.235    36.397    76.768    84.775    51.811    61.545    81.972    50.45     
+26                                 58.749    74.366    46.477    78.482    84.562    48.19     85.577    85.723    60.39     71.559    82.996    59.391    
+27                                 40.745    61.053    27.313    65.125    80.948    29.901    68.596    83.84     42.167    51.307    79.603    40.842    
+28                                 59.417    69.074    51.197    72.609    84.567    53.216    85.82     85.603    60.967    72.347    82.837    59.93     
+29                                 64.156    76.545    53.817    80.343    86.676    56.06     86.131    87.106    65.737    77.029    84.833    65.347    
+3                                  67.941    75.495    61.186    79.842    84.084    66.605    78.621    85.343    69.869    83.995    82.414    69.224    
+30                                 50.836    60.019    43.189    63.774    82.648    45.703    81.332    85.072    52.473    63.683    81.024    51.599    
+31                                 73.284    77.622    69.209    81.685    84.941    72.574    85.567    85.761    75.135    90.434    83.192    75.233    
+32                                 51.764    58.53     45.853    61.427    83.929    47.226    85.586    85.463    53.067    62.709    82.316    51.62     
+33                                 69.218    77.693    61.692    81.367    85.82     64.459    84.998    86.279    70.818    83.692    84.038    70.334    
+34                                 68.819    77.793    60.912    81.633    86.521    63.672    85.263    86.978    70.493    82.624    84.702    69.984    
+35                                 57.15     62.64     52.16     75.762    73.063    53.734    87.966    87.313    62.851    67.351    85.318    57.462    
+36                                 65.55     79.096    54.355    83.009    83.976    59.834    71.208    84.76     67.144    80.915    82.29     66.585    
+37                                 63.84     64.215    63.928    69.391    71.089    69.326    73.568    76.749    66.458    94.052    70.519    66.324    
+38                                 64.158    75.404    54.622    79.819    82.875    57.668    82.081    84.39     66        80.736    81.307    65.644    
+39                                 64.368    72.832    56.934    78.675    79.58     60.242    79.836    83.128    66.902    82.615    79.72     65.861    
+4                                  76.872    77.397    76.375    80.34     88.288    79.062    88.88     88.02     78.306    89.727    86.406    77.53     
+40                                 62.525    76.108    51.419    80.321    83.143    55.849    75.112    84.465    64.248    77.732    81.633    63.455    
+41                                 62.74     71.746    54.9      75.743    83.908    57.281    83.987    85.261    64.465    77.134    82.566    63.686    
+42                                 53.546    69.4      41.453    73.991    79.931    43.596    78.481    82.585    55.374    69.096    78.688    54.37     
+43                                 67.785    75.213    61.101    80.293    82.413    64.389    83.504    84.366    69.973    86.791    81.028    70.325    
+44                                 66.713    73.566    60.516    79.365    79.459    63.866    80.104    83.127    69.255    84.572    80.325    67.932    
+45                                 51.226    57.841    45.385    64.283    72.986    47.518    79.032    80.759    53.977    68.565    76.764    52.634    
+46                                 71.838    76.284    67.66     81.713    81.557    70.963    83.282    84.128    74.288    90.858    81.258    73.829    
+47                                 61.914    70.217    54.619    77.403    77.98     58.655    78.988    83.21     64.979    79.92     79.754    63.74     
+48                                 41.074    57.432    29.462    66.881    68.568    32.479    65.364    79.718    44.384    56.469    74.368    41.995    
+49                                 62.251    75.177    51.575    82.15     81.34     54.32     82.868    85.648    65.069    75.769    83.376    63.173    
+5                                  57.324    73.842    44.591    77.448    84.558    46.495    82.832    85.375    58.758    69.978    82.864    57.987    
+6                                  66.855    75.572    59.208    79.279    81.959    62.378    80.693    83.173    68.491    84.658    80.366    68.036    
+7                                  55.784    73.087    42.654    76.509    86.277    44.819    82.554    86.78     57.126    66.134    84.541    55.91     
+8                                  66.448    75.021    58.908    78.693    82.491    62.107    80.542    83.696    68.067    83.25     80.887    67.338    
+9                                  56.054    70.82     44.549    75.135    82.312    46.965    81.905    84.188    57.815    70.642    80.784    57.067    
+COMBINED                           62.057    72.189    53.462    77.13     82.245    56.748    80.524    84.684    64.21     77.01     81.66     62.886    
+
+Count: test-pedestrian             Dets      GT_Dets   IDs       GT_IDs    
+1                                  9393      10736     48        26        
+10                                 7543      8656      49        25        
+11                                 9000      9830      37        24        
+12                                 13527     13832     25        21        
+13                                 12565     13310     41        23        
+14                                 11162     11640     37        24        
+15                                 10537     10858     31        20        
+16                                 12900     13337     39        22        
+17                                 9863      10667     41        24        
+18                                 10674     11729     46        28        
+19                                 7862      8370      42        22        
+2                                  7887      8391      40        29        
+20                                 10168     11810     60        23        
+21                                 7963      8473      40        23        
+22                                 7549      8272      32        24        
+23                                 10743     11779     59        22        
+24                                 9131      9828      45        19        
+25                                 11924     12604     55        22        
+26                                 9049      9750      54        23        
+27                                 8289      10303     62        24        
+28                                 5884      6853      44        23        
+29                                 8525      9197      40        23        
+3                                  9618      10129     33        23        
+30                                 6876      8911      51        24        
+31                                 6446      6703      26        21        
+32                                 4073      5565      45        25        
+33                                 8990      9482      43        22        
+34                                 9286      9842      36        22        
+35                                 10613     10235     62        25        
+36                                 13822     13983     33        23        
+37                                 16711     17120     32        26        
+38                                 11622     12067     45        24        
+39                                 10857     10982     43        23        
+4                                  7056      7754      28        24        
+40                                 11217     11611     43        23        
+41                                 9805      10862     49        25        
+42                                 10825     11694     60        24        
+43                                 14050     14421     40        23        
+44                                 12709     12724     42        21        
+45                                 9381      10651     62        23        
+46                                 13137     13112     47        23        
+47                                 13819     13922     47        25        
+48                                 12931     13257     79        24        
+49                                 11866     11749     44        19        
+5                                  10130     11060     52        26        
+6                                  10356     10706     39        22        
+7                                  9665      10899     68        24        
+8                                  11252     11795     39        24        
+9                                  8176      8957      47        24        
+COMBINED                           497427    530418    2202      1146      
+
+=== TrackEval (SoccerNet-style) HOTA@0.50 ===
+HOTA@0.50: 0.745624
+
+--- Checking behavior files ---
+Missing count: 0
+MAE:  0.460367
+nMAE: 0.953963
+PTBS: 1.699588
