@@ -5,7 +5,6 @@ import numpy as np
 import torch
 from tqdm import tqdm
 from ultralytics import YOLO
-import os
 
 def pick_device():
     if torch.cuda.is_available():
