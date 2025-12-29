@@ -1,0 +1,12 @@
+tracker_type: botsort
+track_high_thresh: 0.4   # <--- MODIFICATO (Era 0.6)
+track_low_thresh: 0.15    # <--- MODIFICATO (Era 0.15)
+new_track_thresh: 0.5   # <--- MODIFICATO (Era 0.7)
+track_buffer: 90        # OTTIMO (4 secondi di memoria per occlusioni)
+match_thresh: 0.75        # Va bene, ma se perdi ID sui scatti veloci abbassa a 0.7
+fuse_score: False         # OK
+gmc_method: sparseOptFlow # FONDAMENTALE per il calcio (compensa la telecamera)
+proximity_thresh: 0.4    # Incentiva l'uso della posizione per il match (abbassato da 0.5)
+appearance_thresh: 0.85   # Matching sull'appearance più severo (era 0.4)
+with_reid: True
+model: auto

@@ -415,5 +415,5 @@ if __name__ == "__main__":
         group="12",
         fps=200.0,
         split="test",
-        show_window=True,
+        show_window=False,
     )
