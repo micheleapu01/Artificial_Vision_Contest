@@ -5,82 +5,94 @@ import pandas as pd
 import argparse
 
 def interpolate_file(file_path, max_gap=20, interp_conf=0.4):
-    """
-    Legge un file di tracking, applica l'interpolazione e lo SOVRASCRIVE.
-    interp_conf: Valore di confidenza da assegnare ai frame creati artificialmente.
-    """
     filename = os.path.basename(file_path)
     
     try:
-        # Tenta di leggere con la virgola
         df = pd.read_csv(file_path, header=None, sep=',')
-        
-        # Se ha letto tutto in una sola colonna, prova con spazi
         if df.shape[1] == 1:
              df = pd.read_csv(file_path, header=None, sep=r'\s+', engine='python')
-
     except Exception as e:
-        print(f" [SKIP] Errore lettura {filename}: {e}")
+        print(f"⚠️ [SKIP] Errore lettura {filename}: {e}")
         return
 
-    if df.empty:
-        print(f" [SKIP] File vuoto: {filename}")
+    if df.empty or df.shape[1] < 7:
         return
 
-    # --- CONTROLLO COLONNE ---
-    num_cols = df.shape[1]
-    if num_cols < 7:
-        return
-
-    # Standardizzazione a 10 colonne (MOT format)
-    if num_cols < 10:
-        for i in range(num_cols, 10):
+    if df.shape[1] < 10:
+        for i in range(df.shape[1], 10):
             df[i] = -1
 
     df = df.iloc[:, :10] 
     df.columns = ['frame', 'id', 'x', 'y', 'w', 'h', 'conf', 'x3d', 'y3d', 'z3d']
-    
-    # Ordina per ID e Frame
     df = df.sort_values(by=['id', 'frame'])
     
     interpolated_list = []
     
-    # Itera per ogni ID
+    # Variabili per statistiche finali
+    total_filled = 0
+    affected_ids = 0
+
+    print(f"\n--- Analisi file: {filename} ---")
+    
     for track_id in df['id'].unique():
         track = df[df['id'] == track_id].copy()
         
+        # 1. VISUALIZZA MIN E MAX
         min_f, max_f = track['frame'].min(), track['frame'].max()
-        full_range = np.arange(min_f, max_f + 1)
         
-        # Reindicizza per creare i buchi (NaN) dove mancano i frame
+        # Calcoliamo quanti frame ci sono "realmente" e quanti dovrebbero esserci
+        real_frames_count = len(track)
+        expected_frames_count = int(max_f - min_f + 1)
+        missing_count = expected_frames_count - real_frames_count
+        
+        # Se non manca nulla, passa oltre veloce
+        if missing_count == 0:
+            interpolated_list.append(track)
+            continue
+
+        full_range = np.arange(min_f, max_f + 1)
         track = track.set_index('frame').reindex(full_range).reset_index()
         track['id'] = track_id
         
-        # --- INTERPOLAZIONE LINEARE ---
-        cols_to_interp = ['x', 'y', 'w', 'h']
-
-        # segna quali righe erano buchi PRIMA dell'interpolazione
+        # 2. IDENTIFICA I BUCHI PRIMA DELL'INTERPOLAZIONE
+        # missing_mask è True dove c'è un buco
         missing_mask = track['x'].isna()
+        
+        # Lista dei frame che sono buchi (per stamparli)
+        gaps_frames = track.loc[missing_mask, 'frame'].tolist()
 
-        # riempi SOLO i buchi interni (limit_area='inside')
+        # Interpolazione
+        cols_to_interp = ['x', 'y', 'w', 'h']
         track[cols_to_interp] = track[cols_to_interp].interpolate(
             method='linear', 
             limit=max_gap, 
             limit_area='inside'
         )
 
-        # conf: lascia invariata dove esiste, metti 0 dove manca (temporaneo)
         track['conf'] = track['conf'].where(track['conf'].notna(), 0.0)
-
-        # Assegna la confidenza specifica passata da terminale alle righe interpolate
         track.loc[missing_mask, 'conf'] = interp_conf
-
-        # Riempie le coordinate 3D fittizie con -1
         track[['x3d', 'y3d', 'z3d']] = -1
         
-        # Rimuove le righe che sono rimaste NaN 
-        track = track.dropna(subset=['x'])
+        # 3. VERIFICA COSA È STATO RIEMPITO
+        # Se dopo l'interpolazione la 'x' non è più NaN, vuol dire che è stato riempito
+        # Se è ancora NaN, vuol dire che il gap era > max_gap
+        filled_mask = missing_mask & track['x'].notna()
+        filled_frames = track.loc[filled_mask, 'frame'].tolist()
         
+        num_filled = len(filled_frames)
+        
+        if num_filled > 0:
+            affected_ids += 1
+            total_filled += num_filled
+            print(f"🔹 ID {int(track_id)}: Range [{int(min_f)} - {int(max_f)}]")
+            print(f"   Mancanti ({len(gaps_frames)}): {gaps_frames}")
+            print(f"   Riempiti ({num_filled}): {filled_frames}")
+            if len(gaps_frames) > num_filled:
+                skipped = [f for f in gaps_frames if f not in filled_frames]
+                print(f"   Ignorati (Gap > {max_gap}): {skipped}")
+        
+        # Rimuove i residui NaN
+        track = track.dropna(subset=['x'])
         interpolated_list.append(track)
     
     if not interpolated_list:
@@ -88,14 +100,13 @@ def interpolate_file(file_path, max_gap=20, interp_conf=0.4):
 
     final_df = pd.concat(interpolated_list)
     final_df = final_df.sort_values(by=['frame', 'id'])
-    
-    # Arrotondamento per pulizia
     final_df[['x', 'y', 'w', 'h']] = final_df[['x', 'y', 'w', 'h']].round(2)
     
     temp_file = file_path + ".tmp"
     final_df.to_csv(temp_file, header=False, index=False, sep=',')
     os.replace(temp_file, file_path)
-    print(f" Interpolato: {filename}")
+    
+    print(f" CONCLUSIONE {filename}: Modificati {affected_ids} ID, Creati {total_filled} nuovi frame.")
 
 def main():
     parser = argparse.ArgumentParser()
