@@ -153,36 +153,90 @@ def keep_by_field(
     scale: float,
     field_mask: np.ndarray,
     line_tol_px: int,
+    # tuning:
+    bottom_strip_frac: float = 0.22,   # usa ultimo ~22% bbox per overlap
+    min_strip_overlap: float = 0.06,   # >=6% strip su campo => keep
+    dilate_px: int = 3,                # dilata la maschera (pixel su scala ridotta)
 ) -> np.ndarray:
     """
-    Tiene bbox se footpoint è sul campo o a distanza <= line_tol_px (linee bianche).
-    line_tol_px è in pixel della maschera scalata (scale=0.5 => 6px ~ 12px originali)
+    Keep robusto:
+    - multi-footpoint (3 punti sul fondo bbox)
+    - fallback overlap su strip bassa bbox
+    - tolleranza con dilatazione leggera della field_mask
     """
+
     h0, w0 = bgr.shape[:2]
     hs, ws = field_mask.shape[:2]
     sx = ws / max(w0, 1)
     sy = hs / max(h0, 1)
 
-    non_field = (field_mask == 0).astype(np.uint8)
+    # 1) dilata un pelo la maschera per non perdere giocatori su linee/bordi/rumore
+    if dilate_px and dilate_px > 0:
+        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*dilate_px+1, 2*dilate_px+1))
+        fm = cv2.dilate(field_mask, k, iterations=1)
+    else:
+        fm = field_mask
+
+    # 2) distance transform sul complementare
+    non_field = (fm == 0).astype(np.uint8)
     dt = cv2.distanceTransform(non_field, cv2.DIST_L2, 3)
 
     keep = np.zeros((len(xyxy),), dtype=bool)
+
     for i, (x1, y1, x2, y2) in enumerate(xyxy):
-        fx = (x1 + x2) * 0.5
-        fy = y2 - 2.0  # evita che il punto cada sul pixel bianco della linea
+        # clamp bbox in immagine
+        x1 = float(np.clip(x1, 0, w0 - 1))
+        x2 = float(np.clip(x2, 0, w0 - 1))
+        y1 = float(np.clip(y1, 0, h0 - 1))
+        y2 = float(np.clip(y2, 0, h0 - 1))
 
-        fx = float(np.clip(fx, 0, w0 - 1))
-        fy = float(np.clip(fy, 0, h0 - 1))
+        # --- A) multi-footpoint ---
+        fy = y2 - 2.0
+        xs = [x1 + 0.50*(x2-x1), x1 + 0.25*(x2-x1), x1 + 0.75*(x2-x1)]
 
-        mx = int(np.clip(round(fx * sx), 0, ws - 1))
-        my = int(np.clip(round(fy * sy), 0, hs - 1))
+        inside_any = False
+        near_any = False
+        for fx in xs:
+            mx = int(np.clip(round(fx * sx), 0, ws - 1))
+            my = int(np.clip(round(fy * sy), 0, hs - 1))
 
-        if field_mask[my, mx] > 0:
+            if fm[my, mx] > 0:
+                inside_any = True
+                break
+            if dt[my, mx] <= float(line_tol_px):
+                near_any = True
+
+        if inside_any:
             keep[i] = True
+            continue
+
+        # --- B) fallback overlap su strip bassa ---
+        if near_any:
+            x1m = int(np.clip(round(x1 * sx), 0, ws - 1))
+            x2m = int(np.clip(round(x2 * sx), 0, ws - 1))
+            y1m = int(np.clip(round(y1 * sy), 0, hs - 1))
+            y2m = int(np.clip(round(y2 * sy), 0, hs - 1))
+
+            if x2m <= x1m or y2m <= y1m:
+                keep[i] = False
+                continue
+
+            hbb = max(1, y2m - y1m)
+            ys = max(0, y2m - int(bottom_strip_frac * hbb))
+            ye = y2m
+
+            strip = fm[ys:ye, x1m:x2m]
+            if strip.size == 0:
+                keep[i] = False
+                continue
+
+            overlap = float(np.mean(strip > 0))
+            keep[i] = (overlap >= float(min_strip_overlap))
         else:
-            keep[i] = (dt[my, mx] <= float(line_tol_px))
+            keep[i] = False
 
     return keep
+
 
 
 def filter_one_file(
