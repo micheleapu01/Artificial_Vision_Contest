@@ -8,9 +8,12 @@ import cv2
 
 
 def load_mot_txt(path: str) -> pd.DataFrame:
-    df = pd.read_csv(path, header=None, sep=",")
-    if df.shape[1] == 1:
-        df = pd.read_csv(path, header=None, sep=r"\s+", engine="python")
+    try:
+        df = pd.read_csv(path, header=None, sep=",")
+        if df.shape[1] == 1:
+            df = pd.read_csv(path, header=None, sep=r"\s+", engine="python")
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame()
 
     if df.shape[1] < 10:
         for i in range(df.shape[1], 10):
@@ -42,12 +45,11 @@ def build_field_mask(
     area_max_ratio: float,
 ) -> np.ndarray | None:
     """
-    Campo = TUTTE le aree realmente verdi (anche fuori dalle linee bianche),
-    escludendo cemento/grigio e falsi verdi.
-    Strategia:
-      - HSV green (ma con S più severa)
-      - + indice ExG (green-dominant) per eliminare grigi/verdi finti
-      - scegli la componente che TOCCA il bordo basso (evita cartelloni)
+    Strategia "UNIVERSAL / BLIND RUN":
+    1. HSV Range molto largo (passato da args) per catturare ombre e luci forti.
+    2. Excess Green (ExG): Filtro fisico (2G > R+B) per distinguere erba da cemento
+       anche quando la saturazione è bassa.
+    3. Largest Component: Prende solo la massa verde più grande.
     """
     h0, w0 = bgr.shape[:2]
     if scale != 1.0:
@@ -56,95 +58,68 @@ def build_field_mask(
         img = bgr
 
     hs, ws = img.shape[:2]
-    total = float(hs * ws)
+    total_pixels = float(hs * ws)
 
+    # --- 1) HSV Range (Permissivo) ---
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    H, S, V = cv2.split(hsv)
+    mask_hsv = cv2.inRange(hsv, np.array(hsv_low, dtype=np.uint8), np.array(hsv_high, dtype=np.uint8))
 
-    # ----------------------------
-    # 1) HSV GREEN (stringi S per buttare fuori cemento/grigi)
-    # ----------------------------
-    hL, sL, vL = hsv_low
-    hH, sH, vH = hsv_high
+    # --- 2) Excess Green (Refinement) ---
+    # Formula: ExG = 2*G - R - B. 
+    # Se > 0 (o soglia bassa), il verde domina. 
+    # Il cemento ha R~G~B, quindi 2G-R-B ~ 0. L'erba ha G alto.
+    # Questo ci salva se il range HSV include grigi o bianchi.
+    
+    # Separiamo i canali (img è BGR in OpenCV)
+    B, G, R = cv2.split(img)
+    
+    # Calcolo vettorizzato veloce usando float per evitare overflow/underflow
+    # Usiamo una soglia bassa (es. 10) per non perdere erba in ombra scura
+    exg_mask = ((2.0 * G) > (R.astype(float) + B.astype(float) + 5.0)).astype(np.uint8) * 255
+    
+    # Combina HSV e ExG
+    mask = cv2.bitwise_and(mask_hsv, exg_mask)
 
-    # Critico: non usare sL troppo basso (40 è troppo poco)
-    s_min = max(int(sL), 70)   # <- chiave anti-cemento
-    v_min = max(int(vL), 35)
-
-    hsv_mask = cv2.inRange(
-        hsv,
-        np.array([hL, s_min, v_min], np.uint8),
-        np.array([hH, 255, 255], np.uint8),
-    )
-
-    # ----------------------------
-    # 2) ExG (Excess Green) per eliminare falsi verdi/grigi illuminati
-    # ExG = 2G - R - B
-    # ----------------------------
-    b, g, r = cv2.split(img)
-    exg = (2 * g.astype(np.int16) - r.astype(np.int16) - b.astype(np.int16))
-    exg = np.clip(exg, -255, 255)
-
-    # soglia: abbastanza permissiva da tenere prato in ombra, ma tagliare cemento
-    exg_mask = (exg > 20).astype(np.uint8) * 255
-
-    green = cv2.bitwise_and(hsv_mask, exg_mask)
-
-    # ----------------------------
-    # 3) Morfologia (NON spalmare sul cemento!)
-    # ----------------------------
+    # --- 3) Pulizia Morfologica ---
     if k_open > 1:
+        # Rimuove rumore (coriandoli, linee sottili spurie)
         k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_open, k_open))
-        green = cv2.morphologyEx(green, cv2.MORPH_OPEN, k)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k)
+    
     if k_close > 1:
+        # Unisce le zolle d'erba separate da linee bianche o gambe
         k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_close, k_close))
-        green = cv2.morphologyEx(green, cv2.MORPH_CLOSE, k)
-    # dilate solo se proprio serve (meglio disattivarlo = 1)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)
+
+    # --- 4) Largest Component (Il Campo) ---
+    cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not cnts:
+        return None
+
+    # Ordina per area
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+    
+    best_cnt = None
+    for c in cnts[:3]:
+        area = cv2.contourArea(c)
+        ratio = area / max(total_pixels, 1.0)
+        if ratio < area_min_ratio: continue
+        if ratio > area_max_ratio: continue
+        best_cnt = c
+        break
+
+    if best_cnt is None:
+        return None
+
+    # Disegna il campo pieno
+    field_mask = np.zeros_like(mask)
+    cv2.drawContours(field_mask, [best_cnt], -1, 255, thickness=cv2.FILLED)
+
     if k_dilate > 1:
         k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_dilate, k_dilate))
-        green = cv2.dilate(green, k, iterations=1)
+        field_mask = cv2.dilate(field_mask, k, iterations=1)
 
-    green_bin = (green > 0).astype(np.uint8)
-
-    # ----------------------------
-    # 4) Connected Components: prendi quella che tocca il bordo basso
-    # ----------------------------
-    num, lab, stats, _ = cv2.connectedComponentsWithStats(green_bin, 8)
-    if num <= 1:
-        return None
-
-    bottom_labels = set(lab[hs - 1, :].tolist())
-    bottom_labels.discard(0)
-
-    # se per qualche motivo non tocca l'ultimo pixel, guarda poco sopra
-    if not bottom_labels:
-        yb = int(0.95 * (hs - 1))
-        bottom_labels = set(lab[yb, :].tolist())
-        bottom_labels.discard(0)
-
-    candidates = bottom_labels if bottom_labels else set(range(1, num))
-
-    best = None
-    best_area = -1
-    for lid in candidates:
-        area = int(stats[lid, cv2.CC_STAT_AREA])
-        ratio = area / max(total, 1.0)
-        if ratio < area_min_ratio or ratio > area_max_ratio:
-            continue
-        if area > best_area:
-            best_area = area
-            best = lid
-
-    if best is None:
-        return None
-
-    field = (lab == best).astype(np.uint8) * 255
-
-    # chiudi piccoli buchi
-    ksmall = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-    field = cv2.morphologyEx(field, cv2.MORPH_CLOSE, ksmall)
-
-    return field
+    return field_mask
 
 
 def keep_by_field(
@@ -153,90 +128,82 @@ def keep_by_field(
     scale: float,
     field_mask: np.ndarray,
     line_tol_px: int,
-    # tuning:
-    bottom_strip_frac: float = 0.22,   # usa ultimo ~22% bbox per overlap
-    min_strip_overlap: float = 0.06,   # >=6% strip su campo => keep
-    dilate_px: int = 3,                # dilata la maschera (pixel su scala ridotta)
+    bottom_strip_frac: float = 0.20,
+    min_strip_overlap: float = 0.05,
 ) -> np.ndarray:
     """
-    Keep robusto:
-    - multi-footpoint (3 punti sul fondo bbox)
-    - fallback overlap su strip bassa bbox
-    - tolleranza con dilatazione leggera della field_mask
+    Logica robusta "Inside or Touch":
+    1. Controlla 3 punti (sx, centro, dx) sul lato inferiore del box.
+    2. Fallback: Se vicini ma non dentro, controlla overlap striscia inferiore.
     """
-
     h0, w0 = bgr.shape[:2]
     hs, ws = field_mask.shape[:2]
     sx = ws / max(w0, 1)
     sy = hs / max(h0, 1)
 
-    # 1) dilata un pelo la maschera per non perdere giocatori su linee/bordi/rumore
-    if dilate_px and dilate_px > 0:
-        k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*dilate_px+1, 2*dilate_px+1))
-        fm = cv2.dilate(field_mask, k, iterations=1)
+    # Distance Transform solo se necessario (più lento ma preciso per 'line_tol')
+    if line_tol_px > 0:
+        non_field = (field_mask == 0).astype(np.uint8)
+        dt = cv2.distanceTransform(non_field, cv2.DIST_L2, 3)
     else:
-        fm = field_mask
-
-    # 2) distance transform sul complementare
-    non_field = (fm == 0).astype(np.uint8)
-    dt = cv2.distanceTransform(non_field, cv2.DIST_L2, 3)
+        dt = None
 
     keep = np.zeros((len(xyxy),), dtype=bool)
 
     for i, (x1, y1, x2, y2) in enumerate(xyxy):
-        # clamp bbox in immagine
-        x1 = float(np.clip(x1, 0, w0 - 1))
-        x2 = float(np.clip(x2, 0, w0 - 1))
-        y1 = float(np.clip(y1, 0, h0 - 1))
-        y2 = float(np.clip(y2, 0, h0 - 1))
+        # Clip
+        x1, y1 = max(0, x1), max(0, y1)
+        x2, y2 = min(w0 - 1, x2), min(h0 - 1, y2)
 
-        # --- A) multi-footpoint ---
-        fy = y2 - 2.0
-        xs = [x1 + 0.50*(x2-x1), x1 + 0.25*(x2-x1), x1 + 0.75*(x2-x1)]
+        # A) Multi-point check sul fondo (piedi)
+        fy = y2 - 1.0 
+        # Check su 25%, 50%, 75% della larghezza
+        xs_check = [x1 + 0.25*(x2-x1), x1 + 0.50*(x2-x1), x1 + 0.75*(x2-x1)]
 
-        inside_any = False
-        near_any = False
-        for fx in xs:
-            mx = int(np.clip(round(fx * sx), 0, ws - 1))
-            my = int(np.clip(round(fy * sy), 0, hs - 1))
+        is_inside = False
+        is_close = False
 
-            if fm[my, mx] > 0:
-                inside_any = True
-                break
-            if dt[my, mx] <= float(line_tol_px):
-                near_any = True
+        for fx in xs_check:
+            mx = int(fx * sx)
+            my = int(fy * sy)
+            
+            # Bound check sulla mask
+            mx = min(max(mx, 0), ws - 1)
+            my = min(max(my, 0), hs - 1)
 
-        if inside_any:
+            if field_mask[my, mx] > 0:
+                is_inside = True
+                break 
+            
+            if dt is not None and dt[my, mx] <= line_tol_px:
+                is_close = True
+
+        if is_inside:
             keep[i] = True
             continue
 
-        # --- B) fallback overlap su strip bassa ---
-        if near_any:
-            x1m = int(np.clip(round(x1 * sx), 0, ws - 1))
-            x2m = int(np.clip(round(x2 * sx), 0, ws - 1))
-            y1m = int(np.clip(round(y1 * sy), 0, hs - 1))
-            y2m = int(np.clip(round(y2 * sy), 0, hs - 1))
-
-            if x2m <= x1m or y2m <= y1m:
-                keep[i] = False
-                continue
-
-            hbb = max(1, y2m - y1m)
-            ys = max(0, y2m - int(bottom_strip_frac * hbb))
-            ye = y2m
-
-            strip = fm[ys:ye, x1m:x2m]
-            if strip.size == 0:
-                keep[i] = False
-                continue
-
-            overlap = float(np.mean(strip > 0))
-            keep[i] = (overlap >= float(min_strip_overlap))
-        else:
-            keep[i] = False
+        # B) Fallback: Strip Overlap
+        # Se i punti esatti falliscono (es. piede alzato o scarpa bianca su linea),
+        # guardiamo se la parte bassa del box è "abbastanza verde".
+        if is_close or True: # Fallback sempre attivo per sicurezza
+            x1m = int(x1 * sx)
+            x2m = int(x2 * sx)
+            y1m = int(y1 * sy)
+            y2m = int(y2 * sy)
+            
+            # Validità box scalato
+            if x2m > x1m and y2m > y1m:
+                h_box = y2m - y1m
+                # Ultimo 20% del box
+                y_start = int(y2m - max(1, h_box * bottom_strip_frac))
+                strip = field_mask[y_start:y2m, x1m:x2m]
+                
+                if strip.size > 0:
+                    overlap = np.count_nonzero(strip) / strip.size
+                    if overlap >= min_strip_overlap:
+                        keep[i] = True
 
     return keep
-
 
 
 def filter_one_file(
@@ -257,41 +224,50 @@ def filter_one_file(
     base = os.path.basename(pred_path)
     vid = extract_video_id_from_filename(base)
     if vid is None:
-        print(f" SKIP {base}: nome file non compatibile (atteso tracking_<id>...).")
+        print(f" SKIP {base}: pattern tracking_<id> non trovato.")
         return
 
     img1_dir = os.path.join(videos_root, vid, "img1")
     if not os.path.isdir(img1_dir):
-        print(f" SKIP {base}: non trovo {img1_dir}")
+        print(f" SKIP {base}: dir {img1_dir} non trovata.")
         return
 
     df = load_mot_txt(pred_path)
     if df.empty:
-        print(f" {base} vuoto, skip.")
+        print(f" SKIP {base}: file vuoto.")
         return
 
     df = df.sort_values(["frame", "id"])
-
     kept_rows = []
     removed = 0
 
     last_mask = None
-    last_mask_frame = None
+    last_mask_frame = -999
     last_shape = None
 
     for frame_idx, group in df.groupby("frame", sort=True):
         frame_idx = int(frame_idx)
-        img = cv2.imread(frame_path(img1_dir, frame_idx))
-        if img is None:
-            kept_rows.append(group)
-            continue
-
+        
+        # Logica cache maschera
         recompute = True
-        if last_mask is not None and last_mask_frame is not None and mask_every > 1:
-            if (frame_idx - last_mask_frame) < mask_every and last_shape == img.shape[:2]:
-                recompute = False
+        if last_mask is not None and (frame_idx - last_mask_frame) < mask_every:
+             recompute = False
 
+        img = None
         if recompute:
+            img_path = frame_path(img1_dir, frame_idx)
+            img = cv2.imread(img_path)
+            
+            if img is None:
+                # Se manca frame, teniamo i dati (safe)
+                kept_rows.append(group)
+                continue
+            
+            if last_shape and img.shape[:2] != last_shape:
+                last_mask = None # Reset se cambia risoluzione
+            
+            last_shape = img.shape[:2]
+            
             field_mask = build_field_mask(
                 img, scale, hsv_low, hsv_high,
                 k_close, k_open, k_dilate,
@@ -299,88 +275,93 @@ def filter_one_file(
             )
             last_mask = field_mask
             last_mask_frame = frame_idx
-            last_shape = img.shape[:2]
         else:
             field_mask = last_mask
+            # Se non ricomputiamo, img serve solo per keep_by_field (che usa le dimensioni)
+            # Possiamo caricare un placeholder o usare le dimensioni salvate, 
+            # ma per semplicità ricarichiamo l'img solo se img è None e serve.
+            # In realtà keep_by_field usa img.shape. Possiamo ottimizzare:
+            if img is None and last_shape is not None:
+                # Creiamo dummy array per passare shape senza I/O disco (ottimizzazione)
+                img = np.zeros((last_shape[0], last_shape[1], 3), dtype=np.uint8) 
+            elif img is None:
+                img = cv2.imread(frame_path(img1_dir, frame_idx))
+                if img is None: 
+                    kept_rows.append(group)
+                    continue
 
         if field_mask is None:
+            # Fallback safe: se non trovo il campo, tengo tutto
             kept_rows.append(group)
             continue
 
-        x1 = group["x"].to_numpy(dtype=float)
-        y1 = group["y"].to_numpy(dtype=float)
-        x2 = x1 + group["w"].to_numpy(dtype=float)
-        y2 = y1 + group["h"].to_numpy(dtype=float)
-        xyxy = np.stack([x1, y1, x2, y2], axis=1)
-
+        xyxy = group[["x", "y", "w", "h"]].to_numpy()
+        xyxy[:, 2] += xyxy[:, 0] # w -> x2
+        xyxy[:, 3] += xyxy[:, 1] # h -> y2
+        
         keep = keep_by_field(img, xyxy, scale, field_mask, line_tol_px)
 
         if conf_keep_outside > 0:
-            conf = group["conf"].to_numpy(dtype=float)
+            conf = group["conf"].to_numpy()
             keep = keep | ((~keep) & (conf >= conf_keep_outside))
 
         removed += int((~keep).sum())
         kept_rows.append(group.loc[keep])
 
-    out = pd.concat(kept_rows, axis=0).sort_values(["frame", "id"])
-    out[["x", "y", "w", "h"]] = out[["x", "y", "w", "h"]].round(2)
+    if kept_rows:
+        out = pd.concat(kept_rows, axis=0).sort_values(["frame", "id"])
+        # Arrotonda e salva
+        out[["x", "y", "w", "h"]] = out[["x", "y", "w", "h"]].round(2)
+        tmp = pred_path + ".tmp"
+        out.to_csv(tmp, header=False, index=False, sep=",")
+        os.replace(tmp, pred_path)
+    else:
+        open(pred_path, 'w').close()
 
-    tmp = pred_path + ".tmp"
-    out.to_csv(tmp, header=False, index=False, sep=",")
-    os.replace(tmp, pred_path)
-
-    print(f" Field-filter: {base} | rimossi {removed} bbox fuori campo")
+    print(f" Done {base} | Rimossi: {removed}")
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pred-folder", required=True, help="Cartella con tracking*.txt (Predictions_folder)")
-    ap.add_argument("--videos-root", required=True, help="Cartella test_set/videos")
-
+    ap.add_argument("--pred-folder", required=True)
+    ap.add_argument("--videos-root", required=True)
     ap.add_argument("--scale", type=float, default=0.5)
-    ap.add_argument("--hsv-low", type=str, default="25,40,40")
-    ap.add_argument("--hsv-high", type=str, default="90,255,255")
 
-    ap.add_argument("--close", type=int, default=11)
-    ap.add_argument("--open", type=int, default=7)
-    ap.add_argument("--dilate", type=int, default=9)
+    # --- SOGLIE "UNIVERSALI" (Blind Run) ---
+    # Hue 20-100: Prende dal verde-giallo al verde-bluastro.
+    # Sat 25-255: Prende anche colori molto spenti (ombre), ma taglia il grigio puro (<25).
+    # Val 20-255: Prende anche ombre scure.
+    # Il vero filtro è "ExG" all'interno del codice.
+    ap.add_argument("--hsv-low", type=str, default="20,25,20")
+    ap.add_argument("--hsv-high", type=str, default="100,255,255")
 
-    ap.add_argument("--line-tol", type=int, default=6)
+    # Morfologia Aggressiva per unire tutto
+    ap.add_argument("--close", type=int, default=35) # Molto alto per chiudere linee grandi
+    ap.add_argument("--open", type=int, default=5)
+    ap.add_argument("--dilate", type=int, default=5)
+
+    ap.add_argument("--line-tol", type=int, default=15)
     ap.add_argument("--mask-every", type=int, default=5)
-
-    ap.add_argument("--area-min", type=float, default=0.08)
-    ap.add_argument("--area-max", type=float, default=0.98)
-
+    ap.add_argument("--area-min", type=float, default=0.10)
+    ap.add_argument("--area-max", type=float, default=1.0)
     ap.add_argument("--conf-keep-outside", type=float, default=0.0)
+
     args = ap.parse_args()
+    
+    h_low = tuple(int(x) for x in args.hsv_low.split(","))
+    h_high = tuple(int(x) for x in args.hsv_high.split(","))
 
-    hsv_low = tuple(int(x) for x in args.hsv_low.split(","))
-    hsv_high = tuple(int(x) for x in args.hsv_high.split(","))
+    files = sorted(glob.glob(os.path.join(args.pred_folder, "tracking*.txt")))
+    print(f" Trovati {len(files)} file.")
 
-    pred_files = sorted(glob.glob(os.path.join(args.pred_folder, "tracking*.txt")))
-    if not pred_files:
-        print(" Nessun tracking*.txt trovato in pred-folder")
-        return
-
-    print(f" Trovati {len(pred_files)} file tracking*.txt. (behavior ignorati)")
-
-    for pred_path in pred_files:
+    for p in files:
         filter_one_file(
-            pred_path=pred_path,
-            videos_root=args.videos_root,
-            scale=args.scale,
-            hsv_low=hsv_low,
-            hsv_high=hsv_high,
-            k_close=args.close,
-            k_open=args.open,
-            k_dilate=args.dilate,
-            line_tol_px=args.line_tol,
-            area_min_ratio=args.area_min,
-            area_max_ratio=args.area_max,
-            conf_keep_outside=args.conf_keep_outside,
-            mask_every=max(1, args.mask_every),
+            p, args.videos_root, args.scale,
+            h_low, h_high,
+            args.close, args.open, args.dilate,
+            args.line_tol, args.area_min, args.area_max,
+            args.conf_keep_outside, max(1, args.mask_every)
         )
-
 
 if __name__ == "__main__":
     main()
