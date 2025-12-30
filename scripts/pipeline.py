@@ -15,9 +15,9 @@ FULL_OUTPUT_DIR = "SIMULATOR/lecture_example_from_training/Predictions_folder"
 
 # Percorsi agli script Python
 SCRIPT_TRACK        = "scripts/track_with_FineTuning.py"
-SCRIPT_FIELD_FILTER = "data_tools/field_filter.py"    # <--- Aggiunto
-SCRIPT_INTERP       = "scripts/interpolate.py"
-SCRIPT_STITCH       = "scripts/stitching_advanced.py" # O stitch_tracks_advanced.py
+SCRIPT_FIELD_FILTER = "data_tools/field_filter.py"    
+SCRIPT_INTERP       = "scripts/interpolate_new.py"
+SCRIPT_STITCH       = "scripts/stitching_new.py" 
 SCRIPT_BEHAVIOR     = "scripts/behavior.py"
 
 # Configurazione YAML del tracker
@@ -34,7 +34,7 @@ TRACKING_ARGS = [
     "--tracker", TRACKER_CONFIG,
     "--out", FULL_OUTPUT_DIR,
     "--conf", "0.15",
-    "--iou", "0.6"
+    "--iou", "0.65"
 ]
 
 # 2. FIELD FILTER (Pulizia bordo campo)
@@ -47,20 +47,15 @@ FILTER_ARGS = [
 
 # 3. POST-PROCESSING (Hybrid Sandwich)
 
-# A. Interpolazione Preliminare
-INTERP_1_ARGS = ["--gap", "15", "--conf", "0.6"]
-
-# B. Stitching Avanzato
+# A. Stitching Avanzato
 STITCH_ARGS = [
-    "--max-gap", "60",
-    "--min-len", "10",
-    "--dist-base", "3.5",     # <--- Aggressivo per i pan
-    "--dist-per-gap", "0.2",
+    "--max-gap", "30",
+    "--dist-base", "1.2", 
     "--allow-border"
 ]
 
-# C. Interpolazione Finale
-INTERP_2_ARGS = ["--gap", "60", "--conf", "0.4"]
+# B. Interpolazione Lineare
+INTERP_1_ARGS = ["--gap", "18", "--conf", "0.6"]
 
 # 4. BEHAVIOR ANALYSIS (Calcolo metriche comportamentali)
 BEHAVIOR_ARGS = [
@@ -68,7 +63,7 @@ BEHAVIOR_ARGS = [
     "--tracking-dir", FULL_OUTPUT_DIR,
     "--out", FULL_OUTPUT_DIR,
     "--team", "12",
-    "--window", "5"
+    "--window", "7"
 ]
 
 
@@ -130,16 +125,13 @@ def main():
     # Rimuove le detection fuori dal campo PRIMA di unirle
     run_command(SCRIPT_FIELD_FILTER, FILTER_ARGS, "2. Field Filter (Rimozione Pubblico)")
 
-    # --- FASE 3: POST-PROCESSING (Sandwich) ---
+    # --- FASE 3: POST-PROCESSING ---
     
-    # A. Pulizia micro-gap
-    run_command(SCRIPT_INTERP, ["--folder", FULL_OUTPUT_DIR] + INTERP_1_ARGS, "3. Interpolazione Preliminare")
+    # A. Unione ID spezzati
+    run_command(SCRIPT_STITCH, ["--folder", FULL_OUTPUT_DIR] + STITCH_ARGS, "4. Stitching")
 
-    # B. Unione ID spezzati
-    run_command(SCRIPT_STITCH, ["--folder", FULL_OUTPUT_DIR] + STITCH_ARGS, "4. Stitching Avanzato")
-
-    # C. Chiusura macro-gap
-    run_command(SCRIPT_INTERP, ["--folder", FULL_OUTPUT_DIR] + INTERP_2_ARGS, "5. Interpolazione Finale")
+    # B. Chiusura macro-gap
+    run_command(SCRIPT_INTERP, ["--folder", FULL_OUTPUT_DIR] + INTERP_1_ARGS, "5. Interpolazione Lineare")
 
     # --- FASE 4: BEHAVIOR ---
     # Calcola le azioni sulle tracce ormai definitive

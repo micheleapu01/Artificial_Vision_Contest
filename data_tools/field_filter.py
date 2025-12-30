@@ -45,11 +45,10 @@ def build_field_mask(
     area_max_ratio: float,
 ) -> np.ndarray | None:
     """
-    Strategia "UNIVERSAL / BLIND RUN":
-    1. HSV Range molto largo (passato da args) per catturare ombre e luci forti.
-    2. Excess Green (ExG): Filtro fisico (2G > R+B) per distinguere erba da cemento
-       anche quando la saturazione è bassa.
-    3. Largest Component: Prende solo la massa verde più grande.
+    Costruisce la maschera binaria del campo usando:
+    1. HSV Range (Ampio)
+    2. Excess Green (ExG) per robustezza su cemento/erba
+    3. Largest Component
     """
     h0, w0 = bgr.shape[:2]
     if scale != 1.0:
@@ -60,43 +59,31 @@ def build_field_mask(
     hs, ws = img.shape[:2]
     total_pixels = float(hs * ws)
 
-    # --- 1) HSV Range (Permissivo) ---
+    # 1. HSV
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask_hsv = cv2.inRange(hsv, np.array(hsv_low, dtype=np.uint8), np.array(hsv_high, dtype=np.uint8))
 
-    # --- 2) Excess Green (Refinement) ---
-    # Formula: ExG = 2*G - R - B. 
-    # Se > 0 (o soglia bassa), il verde domina. 
-    # Il cemento ha R~G~B, quindi 2G-R-B ~ 0. L'erba ha G alto.
-    # Questo ci salva se il range HSV include grigi o bianchi.
-    
-    # Separiamo i canali (img è BGR in OpenCV)
+    # 2. Excess Green (2G > R+B)
     B, G, R = cv2.split(img)
-    
-    # Calcolo vettorizzato veloce usando float per evitare overflow/underflow
-    # Usiamo una soglia bassa (es. 10) per non perdere erba in ombra scura
+    # Soglia +5.0 aiuta a tagliare grigi neutri
     exg_mask = ((2.0 * G) > (R.astype(float) + B.astype(float) + 5.0)).astype(np.uint8) * 255
     
-    # Combina HSV e ExG
     mask = cv2.bitwise_and(mask_hsv, exg_mask)
 
-    # --- 3) Pulizia Morfologica ---
+    # 3. Morfologia
     if k_open > 1:
-        # Rimuove rumore (coriandoli, linee sottili spurie)
         k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_open, k_open))
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k)
     
     if k_close > 1:
-        # Unisce le zolle d'erba separate da linee bianche o gambe
         k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_close, k_close))
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k)
 
-    # --- 4) Largest Component (Il Campo) ---
+    # 4. Largest Component
     cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not cnts:
         return None
 
-    # Ordina per area
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
     
     best_cnt = None
@@ -111,7 +98,6 @@ def build_field_mask(
     if best_cnt is None:
         return None
 
-    # Disegna il campo pieno
     field_mask = np.zeros_like(mask)
     cv2.drawContours(field_mask, [best_cnt], -1, 255, thickness=cv2.FILLED)
 
@@ -129,20 +115,26 @@ def keep_by_field(
     field_mask: np.ndarray,
     line_tol_px: int,
     bottom_strip_frac: float = 0.20,
-    min_strip_overlap: float = 0.05,
+    min_strip_overlap: float = 0.30, # Aumentato default per sicurezza
 ) -> np.ndarray:
     """
-    Logica robusta "Inside or Touch":
-    1. Controlla 3 punti (sx, centro, dx) sul lato inferiore del box.
-    2. Fallback: Se vicini ma non dentro, controlla overlap striscia inferiore.
+    Logica Decisionale Rigorosa:
+    1. Check punti chiave (sx, centro, dx) sui piedi.
+    2. Se 'dt' (distanza bordo) <= line_tol_px -> KEEP (Salva il Guardalinee).
+    3. Fallback (Overlap) -> Usato SOLO se siamo disperati, ma qui lo teniamo stretto.
     """
     h0, w0 = bgr.shape[:2]
     hs, ws = field_mask.shape[:2]
     sx = ws / max(w0, 1)
     sy = hs / max(h0, 1)
 
-    # Distance Transform solo se necessario (più lento ma preciso per 'line_tol')
-    if line_tol_px > 0:
+    # Distance Transform: Calcola distanza da pixel 0 (fuori campo) a pixel 1 (campo)
+    # Invertiamo: vogliamo distanza dai pixel neri (0) verso i bianchi? 
+    # No, vogliamo sapere quanto un pixel NERO dista dal BIANCO più vicino.
+    # cv2.distanceTransform calcola distanza allo ZERO più vicino.
+    # Quindi passiamo l'immagine INVERTITA (Field=0, Outside=1)
+    # Così dt[y,x] = distanza dal campo.
+    if line_tol_px >= 0:
         non_field = (field_mask == 0).astype(np.uint8)
         dt = cv2.distanceTransform(non_field, cv2.DIST_L2, 3)
     else:
@@ -151,55 +143,65 @@ def keep_by_field(
     keep = np.zeros((len(xyxy),), dtype=bool)
 
     for i, (x1, y1, x2, y2) in enumerate(xyxy):
-        # Clip
         x1, y1 = max(0, x1), max(0, y1)
         x2, y2 = min(w0 - 1, x2), min(h0 - 1, y2)
 
-        # A) Multi-point check sul fondo (piedi)
+        # Controllo su 3 punti ai piedi
         fy = y2 - 1.0 
-        # Check su 25%, 50%, 75% della larghezza
         xs_check = [x1 + 0.25*(x2-x1), x1 + 0.50*(x2-x1), x1 + 0.75*(x2-x1)]
 
         is_inside = False
-        is_close = False
+        is_close_tolerance = False
 
         for fx in xs_check:
             mx = int(fx * sx)
             my = int(fy * sy)
-            
-            # Bound check sulla mask
             mx = min(max(mx, 0), ws - 1)
             my = min(max(my, 0), hs - 1)
 
+            # 1. DENTRO IL CAMPO
             if field_mask[my, mx] > 0:
                 is_inside = True
                 break 
             
-            if dt is not None and dt[my, mx] <= line_tol_px:
-                is_close = True
+            # 2. VICINO AL BORDO (Distance Transform)
+            if dt is not None:
+                dist = dt[my, mx]
+                if dist <= line_tol_px:
+                    is_close_tolerance = True
 
+        # --- LOGICA DI DECISIONE GERARCHICA ---
+        
+        # A. Sei in campo? -> SI
         if is_inside:
             keep[i] = True
             continue
 
-        # B) Fallback: Strip Overlap
-        # Se i punti esatti falliscono (es. piede alzato o scarpa bianca su linea),
-        # guardiamo se la parte bassa del box è "abbastanza verde".
-        if is_close or True: # Fallback sempre attivo per sicurezza
+        # B. Sei fuori ma entro la tolleranza (es. Guardalinee)? -> SI
+        #    Questo è il punto che salva il guardalinee ed elimina la riserva a 2m
+        if is_close_tolerance:
+            keep[i] = True
+            continue
+
+        # C. Fallback: Overlap Striscia
+        #    Se line_tol è basso (es. 2), non vogliamo che questo fallback
+        #    riporti dentro le riserve. Lo usiamo solo se overlap è molto alto.
+        #    (Opzionale: puoi commentarlo se vuoi essere severissimo)
+        if True: 
             x1m = int(x1 * sx)
             x2m = int(x2 * sx)
             y1m = int(y1 * sy)
             y2m = int(y2 * sy)
             
-            # Validità box scalato
             if x2m > x1m and y2m > y1m:
                 h_box = y2m - y1m
-                # Ultimo 20% del box
                 y_start = int(y2m - max(1, h_box * bottom_strip_frac))
                 strip = field_mask[y_start:y2m, x1m:x2m]
                 
                 if strip.size > 0:
                     overlap = np.count_nonzero(strip) / strip.size
+                    # Se min_strip_overlap è basso (0.05), ripeschi le riserve.
+                    # Manteniamolo onesto (es. 0.3 o quello passato da args)
                     if overlap >= min_strip_overlap:
                         keep[i] = True
 
@@ -248,7 +250,6 @@ def filter_one_file(
     for frame_idx, group in df.groupby("frame", sort=True):
         frame_idx = int(frame_idx)
         
-        # Logica cache maschera
         recompute = True
         if last_mask is not None and (frame_idx - last_mask_frame) < mask_every:
              recompute = False
@@ -259,12 +260,11 @@ def filter_one_file(
             img = cv2.imread(img_path)
             
             if img is None:
-                # Se manca frame, teniamo i dati (safe)
                 kept_rows.append(group)
                 continue
             
             if last_shape and img.shape[:2] != last_shape:
-                last_mask = None # Reset se cambia risoluzione
+                last_mask = None 
             
             last_shape = img.shape[:2]
             
@@ -277,12 +277,8 @@ def filter_one_file(
             last_mask_frame = frame_idx
         else:
             field_mask = last_mask
-            # Se non ricomputiamo, img serve solo per keep_by_field (che usa le dimensioni)
-            # Possiamo caricare un placeholder o usare le dimensioni salvate, 
-            # ma per semplicità ricarichiamo l'img solo se img è None e serve.
-            # In realtà keep_by_field usa img.shape. Possiamo ottimizzare:
             if img is None and last_shape is not None:
-                # Creiamo dummy array per passare shape senza I/O disco (ottimizzazione)
+                # Dummy per passare shape corretta a keep_by_field
                 img = np.zeros((last_shape[0], last_shape[1], 3), dtype=np.uint8) 
             elif img is None:
                 img = cv2.imread(frame_path(img1_dir, frame_idx))
@@ -291,7 +287,6 @@ def filter_one_file(
                     continue
 
         if field_mask is None:
-            # Fallback safe: se non trovo il campo, tengo tutto
             kept_rows.append(group)
             continue
 
@@ -310,7 +305,6 @@ def filter_one_file(
 
     if kept_rows:
         out = pd.concat(kept_rows, axis=0).sort_values(["frame", "id"])
-        # Arrotonda e salva
         out[["x", "y", "w", "h"]] = out[["x", "y", "w", "h"]].round(2)
         tmp = pred_path + ".tmp"
         out.to_csv(tmp, header=False, index=False, sep=",")
@@ -327,16 +321,10 @@ def main():
     ap.add_argument("--videos-root", required=True)
     ap.add_argument("--scale", type=float, default=0.5)
 
-    # --- SOGLIE "UNIVERSALI" (Blind Run) ---
-    # Hue 20-100: Prende dal verde-giallo al verde-bluastro.
-    # Sat 25-255: Prende anche colori molto spenti (ombre), ma taglia il grigio puro (<25).
-    # Val 20-255: Prende anche ombre scure.
-    # Il vero filtro è "ExG" all'interno del codice.
     ap.add_argument("--hsv-low", type=str, default="20,25,20")
     ap.add_argument("--hsv-high", type=str, default="100,255,255")
 
-    # Morfologia Aggressiva per unire tutto
-    ap.add_argument("--close", type=int, default=35) # Molto alto per chiudere linee grandi
+    ap.add_argument("--close", type=int, default=35) 
     ap.add_argument("--open", type=int, default=5)
     ap.add_argument("--dilate", type=int, default=5)
 
