@@ -13,7 +13,7 @@ def pick_device():
         return "mps"
     return "cpu"
 
-def process_video(video_path, tracker, out_path, model, device, conf, iou, augment,show):
+def process_video(video_path, tracker, out_path, model, device, conf, iou, max_det,show):
     with open(out_path, "w", encoding="utf-8") as f:
         results = model.track(
             source=video_path,
@@ -24,7 +24,7 @@ def process_video(video_path, tracker, out_path, model, device, conf, iou, augme
             device=device,
             conf=conf,
             iou=iou,
-            augment = augment,
+            max_det = max_det,
             verbose=False,
         )
 
@@ -70,7 +70,7 @@ def main():
     ap.add_argument("--weights", default="weights/train_yolo11m_SoccerNet.pt")
     ap.add_argument("--conf", type=float, default=0.25)
     ap.add_argument("--iou", type=float, default=0.7)
-    ap.add_argument('--augment', action='store_true', help='Perform Test-Time Augmentation (TTA)')
+    ap.add_argument("--max-det", type=int, default=300, help="Numero massimo di rilevazioni per frame")
     ap.add_argument("--show", action="store_true")
     ap.add_argument("--win-w", type=int, default=960)
     ap.add_argument("--win-h", type=int, default=540)
@@ -110,7 +110,7 @@ def main():
         output_txt_path = out_base_path / f"tracking_{vid}_12.txt"
         process_video(
             video_path, args.tracker, output_txt_path, model, device,
-            args.conf, args.iou, args.augment, args.show, 
+            args.conf, args.iou, args.max_det, args.show, 
         )
 
 if __name__ == "__main__":
