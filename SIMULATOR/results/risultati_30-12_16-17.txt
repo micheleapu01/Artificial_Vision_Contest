@@ -1,0 +1,98 @@
+
+Eval Config:
+USE_PARALLEL         : False                         
+NUM_PARALLEL_CORES   : 8                             
+BREAK_ON_ERROR       : True                          
+RETURN_ON_ERROR      : False                         
+LOG_ON_ERROR         : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/.venv/lib/python3.12/site-packages/error_log.txt
+PRINT_RESULTS        : True                          
+PRINT_ONLY_COMBINED  : False                         
+PRINT_CONFIG         : True                          
+TIME_PROGRESS        : True                          
+DISPLAY_LESS_PROGRESS : True                          
+OUTPUT_SUMMARY       : True                          
+OUTPUT_EMPTY_CLASSES : True                          
+OUTPUT_DETAILED      : True                          
+PLOT_CURVES          : True                          
+
+MotChallenge2DBox Config:
+GT_FOLDER            : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/gt
+TRACKERS_FOLDER      : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/trackers
+OUTPUT_FOLDER        : None                          
+TRACKERS_TO_EVAL     : ['test']                      
+CLASSES_TO_EVAL      : ['pedestrian']                
+BENCHMARK            : SNMOT                         
+SPLIT_TO_EVAL        : test                          
+INPUT_AS_ZIP         : False                         
+PRINT_CONFIG         : True                          
+DO_PREPROC           : False                         
+TRACKER_SUB_FOLDER   : data                          
+OUTPUT_SUB_FOLDER    : eval_results                  
+TRACKER_DISPLAY_NAMES : None                          
+SEQMAP_FOLDER        : None                          
+SEQMAP_FILE          : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/seqmaps/SNMOT-test.txt
+SEQ_INFO             : None                          
+GT_LOC_FORMAT        : {gt_folder}/{seq}/gt/gt.txt   
+SKIP_SPLIT_FOL       : False                         
+
+Evaluating 1 tracker(s) on 10 sequence(s) for 1 class(es) on MotChallenge2DBox dataset using the following metrics: HOTA, Count
+
+
+Evaluating test
+
+1 eval_sequence(12, test)                                                0.1889 sec
+2 eval_sequence(20, test)                                                0.1677 sec
+3 eval_sequence(27, test)                                                0.1629 sec
+4 eval_sequence(28, test)                                                0.1451 sec
+5 eval_sequence(29, test)                                                0.1630 sec
+6 eval_sequence(3, test)                                                 0.1616 sec
+7 eval_sequence(37, test)                                                0.1954 sec
+8 eval_sequence(4, test)                                                 0.1530 sec
+9 eval_sequence(48, test)                                                0.1852 sec
+10 eval_sequence(6, test)                                                 0.1650 sec
+
+All sequences for test finished in 1.69 seconds
+
+HOTA: test-pedestrian              HOTA      DetA      AssA      DetRe     DetPr     AssRe     AssPr     LocA      OWTA      HOTA(0)   LocA(0)   HOTALocA(0)
+12                                 82.951    86.072    79.958    88.876    90.22     82.778    88.267    89.501    84.265    93.824    88.479    83.015    
+20                                 47.685    67.078    33.979    72.247    79.667    37.853    70.125    82.949    49.546    62.309    78.382    48.839    
+27                                 43.239    64.449    29.142    69.766    79.328    31.699    68.404    83.219    45.084    56.061    78.268    43.878    
+28                                 59.002    72.395    48.209    76.54     83.938    50.679    81.143    85.265    60.743    72.319    82.287    59.509    
+29                                 63.104    77.907    51.181    82.177    86.119    54.697    81.915    86.869    64.843    76.144    84.382    64.251    
+3                                  71.157    77.158    65.668    81.672    83.977    69.874    81.088    85.22     73.203    87.883    82.323    72.348    
+37                                 65.105    64.198    66.458    69.587    70.883    72.086    73.52     76.759    67.862    96.04     70.529    67.737    
+4                                  78.467    79.231    77.74     82.611    87.737    80.758    88.423    87.725    80.112    92.382    85.934    79.387    
+48                                 46.466    60.997    35.48     70.127    69.869    38.503    70.158    79.467    49.875    64.786    73.817    47.823    
+6                                  68.64     75.743    62.256    80.124    81.093    65.348    81.98     82.871    70.597    88.158    79.665    70.231    
+COMBINED                           63.825    71.077    57.666    76.859    80.255    61.328    79.889    83.607    66.552    81.025    79.653    64.539    
+
+Count: test-pedestrian             Dets      GT_Dets   IDs       GT_IDs    
+12                                 13626     13832     26        21        
+20                                 10710     11810     64        23        
+27                                 9061      10303     69        24        
+28                                 6249      6853      46        23        
+29                                 8776      9197      41        23        
+3                                  9851      10129     34        23        
+37                                 16807     17120     38        26        
+4                                  7301      7754      30        24        
+48                                 13306     13257     76        24        
+6                                  10578     10706     41        22        
+COMBINED                           106265    110961    465       233       
+
+=== TrackEval (SoccerNet-style) HOTA@0.50 ===
+HOTA@0.50: 0.769076
+
+--- Checking behavior files ---
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_3_12.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_4_12.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_6_12.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_12_12.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_20_12.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_27_12.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_28_12.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_29_12.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_37_12.txt
+MISSING PRED behavior: lecture_example_from_training/Predictions_folder/behavior_48_12.txt
+Missing count: 10
+Behavior missing -> nMAE not computed (PTBS = HOTA@0.50)
+PTBS: 0.769076

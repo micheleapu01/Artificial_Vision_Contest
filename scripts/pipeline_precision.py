@@ -14,14 +14,14 @@ SCRIPT_FIELD_FILTER = "data_tools/field_filter.py"
 SCRIPT_INTERP       = "scripts/interpolate_new.py"
 SCRIPT_STITCH       = "scripts/stitching_new.py"
 SCRIPT_BEHAVIOR     = "scripts/behavior.py"
-TRACKER_CONFIG      = "configs/botsort_with_gmc_with_FineTuning.yaml"
+TRACKER_CONFIG      = "configs/botsort_hybrid.yaml"
 
 # ==============================================================================
 # PARAMETRI VINCENTI + FIELD TUNING
 # ==============================================================================
 
 # 1. TRACKING
-TRACKING_ARGS = ["--source", SOURCE_VIDEOS, "--tracker", TRACKER_CONFIG, "--out", FULL_OUTPUT_DIR, "--conf", "0.15", "--iou", "0.65"]
+TRACKING_ARGS = ["--source", SOURCE_VIDEOS, "--tracker", TRACKER_CONFIG, "--out", FULL_OUTPUT_DIR, "--conf", "0.15", "--iou", "0.6"]
 
 # 2. FIELD FILTER (IL NUOVO TEST)
 # Tolleranza 2 pixel. Taglia le riserve, salva il guardalinee.

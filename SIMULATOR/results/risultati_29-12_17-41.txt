@@ -1,0 +1,96 @@
+tracker_type: botsort-deep hm sort-like 
+track_high_thresh: 0.4   # <--- MODIFICATO (Era 0.6)
+track_low_thresh: 0.15    # <--- MODIFICATO (Era 0.15)
+new_track_thresh: 0.5   # <--- MODIFICATO (Era 0.7)
+track_buffer: 600        # OTTIMO (4 secondi di memoria per occlusioni)
+match_thresh: 0.8        # Va bene, ma se perdi ID sui scatti veloci abbassa a 0.7
+fuse_score: False         # OK
+gmc_method: sparseOptFlow # FONDAMENTALE per il calcio (compensa la telecamera)
+proximity_thresh: 0.35    # Incentiva l'uso della posizione per il match (abbassato da 0.5)
+appearance_thresh: 0.85   # Matching sull'appearance più severo (era 0.4)
+with_reid: True
+model: auto
+
+
+Eval Config:
+USE_PARALLEL         : False                         
+NUM_PARALLEL_CORES   : 8                             
+BREAK_ON_ERROR       : True                          
+RETURN_ON_ERROR      : False                         
+LOG_ON_ERROR         : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/.venv/lib/python3.12/site-packages/error_log.txt
+PRINT_RESULTS        : True                          
+PRINT_ONLY_COMBINED  : False                         
+PRINT_CONFIG         : True                          
+TIME_PROGRESS        : True                          
+DISPLAY_LESS_PROGRESS : True                          
+OUTPUT_SUMMARY       : True                          
+OUTPUT_EMPTY_CLASSES : True                          
+OUTPUT_DETAILED      : True                          
+PLOT_CURVES          : True                          
+
+MotChallenge2DBox Config:
+GT_FOLDER            : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/gt
+TRACKERS_FOLDER      : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/trackers
+OUTPUT_FOLDER        : None                          
+TRACKERS_TO_EVAL     : ['test']                      
+CLASSES_TO_EVAL      : ['pedestrian']                
+BENCHMARK            : SNMOT                         
+SPLIT_TO_EVAL        : test                          
+INPUT_AS_ZIP         : False                         
+PRINT_CONFIG         : True                          
+DO_PREPROC           : False                         
+TRACKER_SUB_FOLDER   : data                          
+OUTPUT_SUB_FOLDER    : eval_results                  
+TRACKER_DISPLAY_NAMES : None                          
+SEQMAP_FOLDER        : None                          
+SEQMAP_FILE          : /Users/micheal/ArtificialVisionEsercizi/Contest/Artificial_Vision_Contest/SIMULATOR/_tmp_trackeval_soccernet/seqmaps/SNMOT-test.txt
+SEQ_INFO             : None                          
+GT_LOC_FORMAT        : {gt_folder}/{seq}/gt/gt.txt   
+SKIP_SPLIT_FOL       : False                         
+
+Evaluating 1 tracker(s) on 8 sequence(s) for 1 class(es) on MotChallenge2DBox dataset using the following metrics: HOTA, Count
+
+
+Evaluating test
+
+1 eval_sequence(12, test)                                                0.1822 sec
+2 eval_sequence(20, test)                                                0.1651 sec
+3 eval_sequence(27, test)                                                0.1579 sec
+4 eval_sequence(3, test)                                                 0.1584 sec
+5 eval_sequence(37, test)                                                0.1969 sec
+6 eval_sequence(4, test)                                                 0.1489 sec
+7 eval_sequence(48, test)                                                0.1736 sec
+8 eval_sequence(6, test)                                                 0.1665 sec
+
+All sequences for test finished in 1.35 seconds
+
+HOTA: test-pedestrian              HOTA      DetA      AssA      DetRe     DetPr     AssRe     AssPr     LocA      OWTA      HOTA(0)   LocA(0)   HOTALocA(0)
+12                                 84.887    86.654    83.166    89.707    90.019    85.348    91.043    89.541    86.332    96.074    88.585    85.107    
+20                                 49.715    66.769    37.147    73.219    77.987    43.029    64.639    82.813    52.15     64.834    77.892    50.501    
+27                                 44.304    62.83     31.375    70.243    76.172    36.112    60.103    82.959    46.941    57.994    77.235    44.791    
+3                                  73.96     77.214    70.867    81.828    83.882    75.287    82.588    85.233    76.104    91.885    82.359    75.675    
+37                                 65.026    64.082    66.426    70.605    69.834    72.119    73.419    76.84     68.345    95.774    70.606    67.622    
+4                                  77.503    78.555    76.496    82.224    87.386    79.824    87.844    87.768    79.284    91.19     85.925    78.355    
+48                                 43.69     59.362    32.249    69.743    68.009    36.704    61.505    79.31     47.42     61.125    73.338    44.828    
+6                                  68.421    75.392    62.131    80.151    80.671    65.495    81.34     82.864    70.527    88.262    79.608    70.264    
+COMBINED                           64.58     69.829    60.179    76.778    78.279    64.619    77.405    83.113    67.936    82.634    78.792    65.109    
+
+Count: test-pedestrian             Dets      GT_Dets   IDs       GT_IDs    
+12                                 13784     13832     27        21        
+20                                 11088     11810     50        23        
+27                                 9501      10303     52        24        
+3                                  9881      10129     32        23        
+37                                 17309     17120     36        26        
+4                                  7296      7754      31        24        
+48                                 13595     13257     67        24        
+6                                  10637     10706     38        22        
+COMBINED                           93091     94911     333       187       
+
+=== TrackEval (SoccerNet-style) HOTA@0.50 ===
+HOTA@0.50: 0.779618
+
+--- Checking behavior files ---
+Missing count: 0
+MAE:  0.338083
+nMAE: 0.966192
+PTBS: 1.745810

@@ -1,18 +1,14 @@
 tracker_type: botsort
-
-track_high_thresh: 0.55
+track_high_thresh: 0.4
 track_low_thresh: 0.15
-new_track_thresh: 0.5
+new_track_thresh: 0.4
 track_buffer: 90
-match_thresh: 0.8
+match_thresh: 0.75
 fuse_score: False
-
 gmc_method: sparseOptFlow   
-
-
 with_reid: True
-model: osnet       
-
-
+model: osnet      
 proximity_thresh: 0.4
 appearance_thresh: 0.85
+
+

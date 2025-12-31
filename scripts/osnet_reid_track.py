@@ -1,4 +1,3 @@
-# scripts/track_osnet.py
 import argparse
 from pathlib import Path
 import cv2
@@ -6,118 +5,11 @@ import numpy as np
 import torch
 from tqdm import tqdm
 from ultralytics import YOLO
-
-
-# -----------------------------
-# OSNet ReID Monkey-Patch (Ultralytics BoT-SORT)
-# -----------------------------
 from torchreid.utils import FeatureExtractor
 
 
-def _to_xyxy_candidates(x, y, w, h):
-    """
-    Restituisce 2 interpretazioni:
-    1) xywh con (x,y) = centro
-    2) tlwh con (x,y) = top-left
-    """
-    # center-xywh
-    c_x1 = x - w / 2.0
-    c_y1 = y - h / 2.0
-    c_x2 = x + w / 2.0
-    c_y2 = y + h / 2.0
-
-    # tlwh
-    t_x1 = x
-    t_y1 = y
-    t_x2 = x + w
-    t_y2 = y + h
-
-    return (c_x1, c_y1, c_x2, c_y2), (t_x1, t_y1, t_x2, t_y2)
-
-
-def _clip_xyxy(x1, y1, x2, y2, W, H):
-    x1 = float(max(0, min(W - 1, x1)))
-    y1 = float(max(0, min(H - 1, y1)))
-    x2 = float(max(0, min(W - 1, x2)))
-    y2 = float(max(0, min(H - 1, y2)))
-    return x1, y1, x2, y2
-
-
-def _area_xyxy(x1, y1, x2, y2):
-    return max(0.0, x2 - x1) * max(0.0, y2 - y1)
-
-
-class ReID_OSNet:
-    """
-    Replacement della classe ultralytics.trackers.bot_sort.ReID.
-    Ultralytics chiamerà: encoder(img, dets) -> lista di embedding (uno per det).
-    """
-
-    def __init__(self, _model_str: str, weights_path: str, model_name: str, device: str, min_h_for_reid: int = 0):
-        self.device = device
-        self.min_h_for_reid = int(min_h_for_reid)
-
-        self.extractor = FeatureExtractor(
-            model_name=model_name,
-            model_path=weights_path,
-            device=device,
-        )
-
-    def __call__(self, img: np.ndarray, dets: np.ndarray):
-        if dets is None or len(dets) == 0:
-            return []
-
-        H, W = img.shape[:2]
-        dets = np.asarray(dets)
-        boxes = dets[:, :4].astype(np.float32)
-
-        crops = []
-        for x, y, w, h in boxes:
-            cand1, cand2 = _to_xyxy_candidates(x, y, w, h)
-
-            x1a, y1a, x2a, y2a = _clip_xyxy(*cand1, W, H)
-            x1b, y1b, x2b, y2b = _clip_xyxy(*cand2, W, H)
-
-            area_a = _area_xyxy(x1a, y1a, x2a, y2a)
-            area_b = _area_xyxy(x1b, y1b, x2b, y2b)
-            x1, y1, x2, y2 = (x1a, y1a, x2a, y2a) if area_a >= area_b else (x1b, y1b, x2b, y2b)
-
-            # Se vuoi ignorare ReID su box troppo piccoli (consigliato)
-            if self.min_h_for_reid > 0 and (y2 - y1) < self.min_h_for_reid:
-                crops.append(np.zeros((256, 128, 3), dtype=np.uint8))
-                continue
-
-            if _area_xyxy(x1, y1, x2, y2) < 4.0:
-                crops.append(np.zeros((256, 128, 3), dtype=np.uint8))
-                continue
-
-            crop = img[int(y1):int(y2), int(x1):int(x2)]
-            if crop.size == 0:
-                crops.append(np.zeros((256, 128, 3), dtype=np.uint8))
-                continue
-
-            crop_rgb = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
-            crops.append(crop_rgb)
-
-        feats = self.extractor(crops)  # torch.Tensor (N, D)
-        return [f.detach().cpu().numpy() for f in feats]
-
-
-def patch_ultralytics_botsort_osnet(weights_path: str, model_name: str, device: str, min_h_for_reid: int = 0):
-    """
-    Monkey-patch: sostituisce ultralytics.trackers.bot_sort.ReID con OSNet.
-    Chiamala PRIMA di iniziare il tracking.
-    """
-    import ultralytics.trackers.bot_sort as bot_sort_module
-
-    def _reid_factory(model_str: str):
-        return ReID_OSNet(model_str, weights_path=weights_path, model_name=model_name, device=device, min_h_for_reid=min_h_for_reid)
-
-    bot_sort_module.ReID = _reid_factory
-
-
 # -----------------------------
-# Tracking script (tuo standard + OSNet)
+# Utils
 # -----------------------------
 def pick_device():
     if torch.cuda.is_available():
@@ -126,7 +18,162 @@ def pick_device():
         return "mps"
     return "cpu"
 
+def _clip_xyxy(x1, y1, x2, y2, W, H):
+    x1 = float(max(0, min(W - 1, x1)))
+    y1 = float(max(0, min(H - 1, y1)))
+    x2 = float(max(0, min(W - 1, x2)))
+    y2 = float(max(0, min(H - 1, y2)))
+    return x1, y1, x2, y2
 
+def _xywh_center_to_xyxy(x, y, w, h):
+    return (x - w / 2.0, y - h / 2.0, x + w / 2.0, y + h / 2.0)
+
+def _pad_xyxy(x1, y1, x2, y2, pad_frac):
+    if pad_frac <= 0:
+        return x1, y1, x2, y2
+    w = (x2 - x1)
+    h = (y2 - y1)
+    px = w * pad_frac
+    py = h * pad_frac
+    return x1 - px, y1 - py, x2 + px, y2 + py
+
+def _harmonic_mean_cost(d1: np.ndarray, d2: np.ndarray, eps: float = 1e-6) -> np.ndarray:
+    d1 = np.clip(d1, eps, 1.0)
+    d2 = np.clip(d2, eps, 1.0)
+    return 2.0 / (1.0 / d1 + 1.0 / d2)
+
+
+# -----------------------------
+# OSNet ReID (returns NaN for unreliable crops)
+# -----------------------------
+class ReID_OSNet:
+    """
+    Replacement for ultralytics.trackers.bot_sort.ReID
+    Ultralytics calls: encoder(img, dets) -> list[np.ndarray], one per det
+    dets[:, :4] are xywh with center (x,y).
+    """
+    def __init__(self, weights_path: str, model_name: str, device: str, min_h: int, pad: float):
+        self.device = device
+        self.min_h = int(min_h)
+        self.pad = float(pad)
+
+        self.extractor = FeatureExtractor(
+            model_name=model_name,
+            model_path=weights_path,
+            device=device,
+        )
+
+        # Determina feature dim una volta per tutte (evita casi "tutte bbox piccole")
+        dummy = np.zeros((256, 128, 3), dtype=np.uint8)
+        with torch.no_grad():
+            feat = self.extractor([dummy])  # (1, D)
+        self.feat_dim = int(feat.shape[1])
+
+    def __call__(self, img: np.ndarray, dets: np.ndarray):
+        if dets is None or len(dets) == 0:
+            return []
+
+        H, W = img.shape[:2]
+        dets = np.asarray(dets)
+        boxes_xywh = dets[:, :4].astype(np.float32)
+
+        out = [None] * len(boxes_xywh)   # None => embedding mancante
+        crops = []
+        valid_idx = []
+
+        for i, (x, y, w, h) in enumerate(boxes_xywh):
+            # Skip ReID su box piccoli
+            if self.min_h > 0 and h < self.min_h:
+                continue
+
+            # xywh(center) -> xyxy
+            x1 = x - w / 2.0
+            y1 = y - h / 2.0
+            x2 = x + w / 2.0
+            y2 = y + h / 2.0
+
+            # padding (aiuta reid)
+            if self.pad > 0:
+                px = (x2 - x1) * self.pad
+                py = (y2 - y1) * self.pad
+                x1 -= px; y1 -= py; x2 += px; y2 += py
+
+            # clip
+            x1, y1, x2, y2 = _clip_xyxy(x1, y1, x2, y2, W, H)
+
+            x1i, y1i, x2i, y2i = map(int, [x1, y1, x2, y2])
+            if (x2i - x1i) < 2 or (y2i - y1i) < 2:
+                continue
+
+            crop = img[y1i:y2i, x1i:x2i]
+            if crop is None or crop.size == 0:
+                continue
+
+            crop_rgb = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+            crops.append(crop_rgb)
+            valid_idx.append(i)
+
+        # Estrai feature per crop validi
+        if len(crops) > 0:
+            feats = self.extractor(crops)  # torch.Tensor (Nv, D)
+            feats = feats.detach().cpu().numpy().astype(np.float32)
+            for k, i in enumerate(valid_idx):
+                out[i] = feats[k]
+
+        # Sostituisci i None con NaN-vector (così poi li ignoriamo nel matching)
+        nanvec = np.full((self.feat_dim,), np.nan, dtype=np.float32)
+        out = [nanvec.copy() if v is None else v for v in out]
+
+        return out
+
+
+
+def patch_ultralytics_botsort_osnet(weights_path: str, model_name: str, device: str, min_h: int, pad: float):
+    import ultralytics.trackers.bot_sort as bot_sort_module
+
+    def _reid_factory(_model_str: str):
+        return ReID_OSNet(weights_path=weights_path, model_name=model_name, device=device, min_h=min_h, pad=pad)
+
+    bot_sort_module.ReID = _reid_factory
+    print("[OK] Patched Ultralytics BoT-SORT ReID -> OSNet (safe).")
+
+
+# -----------------------------
+# Patch BoT-SORT get_dists: sanitize NaNs and optional HM fusion
+# -----------------------------
+def enable_botsort_sanitize_patch(use_hm: bool):
+    from ultralytics.trackers import bot_sort
+    from ultralytics.trackers.utils import matching
+
+    def get_dists_patched(self, tracks, detections):
+        dists = matching.iou_distance(tracks, detections)
+        dists_mask = dists > (1 - self.proximity_thresh)
+
+        if getattr(self.args, "fuse_score", False):
+            dists = matching.fuse_score(dists, detections)
+
+        if getattr(self.args, "with_reid", False) and getattr(self, "encoder", None) is not None:
+            emb_dists = matching.embedding_distance(tracks, detections) / 2.0
+            # IMPORTANT: NaN/inf -> 1.0 so ReID is ignored when crop is unreliable
+            emb_dists = np.nan_to_num(emb_dists, nan=1.0, posinf=1.0, neginf=1.0)
+
+            emb_dists[emb_dists > (1 - self.appearance_thresh)] = 1.0
+            emb_dists[dists_mask] = 1.0
+
+            if use_hm:
+                dists = _harmonic_mean_cost(dists, emb_dists)
+            else:
+                dists = np.minimum(dists, emb_dists)
+
+        return dists
+
+    bot_sort.BOTSORT.get_dists = get_dists_patched
+    print(f"[OK] BoT-SORT patched: sanitize NaNs + fusion={'HM' if use_hm else 'MIN'}")
+
+
+# -----------------------------
+# Tracking
+# -----------------------------
 def process_video(video_path, tracker, out_path, model, device, conf, iou, show, max_det):
     with open(out_path, "w", encoding="utf-8") as f:
         results = model.track(
@@ -179,70 +226,67 @@ def process_video(video_path, tracker, out_path, model, device, conf, iou, show,
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--source", required=True, help="Path to test folder")
-    ap.add_argument("--tracker", required=True, help="Path YAML tracker")
-    ap.add_argument("--out", required=True, help="Output folder for txt files")
+    ap.add_argument("--source", required=True)
+    ap.add_argument("--tracker", required=True)
+    ap.add_argument("--out", required=True)
 
     ap.add_argument("--weights", default="weights/train_yolo11m_SoccerNet.pt")
     ap.add_argument("--conf", type=float, default=0.15)
-    ap.add_argument("--iou", type=float, default=0.55)
+    ap.add_argument("--iou", type=float, default=0.65)
 
-    # OSNet args
-    ap.add_argument("--osnet-weights", required=True, help="Path OSNet .pth, e.g. weights/osnet_x0_25_msmt17.pth")
-    ap.add_argument("--osnet-name", default="osnet_x0_25", help="TorchReID model name: osnet_x0_25 or osnet_x1_0")
-    ap.add_argument("--reid-min-h", type=int, default=0, help="If >0, ignore ReID on boxes with height < this (px).")
+    ap.add_argument("--osnet-weights", required=True)
+    ap.add_argument("--osnet-name", default="osnet_x0_25")
 
-    ap.add_argument("--max-det", type=int, default=300, help="Max detections per frame (reduce NMS spikes).")
+    ap.add_argument("--reid-min-h", type=int, default=60, help="Skip ReID if bbox height < this px")
+    ap.add_argument("--reid-pad", type=float, default=0.10, help="Pad bbox before cropping (fraction)")
+
+    ap.add_argument("--max-det", type=int, default=300)
+    ap.add_argument("--hm-fusion", action="store_true", help="Use HM fusion (after OSNet works)")
 
     ap.add_argument("--show", action="store_true")
-    ap.add_argument("--limit", type=int, default=None, help="Process only first N videos (default: all)")
-
+    ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args()
 
-    device = pick_device()
-    print(f"[INFO] device = {device}")
+    device_det = pick_device()
+    print(f"[INFO] detector device = {device_det}")
 
-    # Patch ReID BEFORE creating/loading detector model
+    # OSNet on CPU if MPS
+    device_reid = "cpu" if device_det == "mps" else device_det
+    if device_det == "mps":
+        print("[WARN] MPS detected: running OSNet ReID on CPU for stability.")
+
     patch_ultralytics_botsort_osnet(
         weights_path=args.osnet_weights,
         model_name=args.osnet_name,
-        device=device,
-        min_h_for_reid=args.reid_min_h,
+        device=device_reid,
+        min_h=args.reid_min_h,
+        pad=args.reid_pad,
     )
-    print(f"[INFO] OSNet ReID enabled: name={args.osnet_name}, weights={args.osnet_weights}")
 
-    # Detector (unchanged)
+    # Sanitize embeddings + choose fusion
+    enable_botsort_sanitize_patch(use_hm=args.hm_fusion)
+
     model = YOLO(args.weights)
 
-    out_base_path = Path(args.out)
-    out_base_path.mkdir(parents=True, exist_ok=True)
+    out_base = Path(args.out)
+    out_base.mkdir(parents=True, exist_ok=True)
 
     test_folder = Path(args.source)
-    video_folders = sorted([p for p in test_folder.iterdir() if p.is_dir() and p.name.isdigit()], key=lambda p: int(p.name))
-
+    video_folders = sorted([p for p in test_folder.iterdir() if p.is_dir() and p.name.isdigit()],
+                           key=lambda p: int(p.name))
     if args.limit is not None:
         video_folders = video_folders[:args.limit]
 
     print(f"[INFO] Processing {len(video_folders)} videos (limit={args.limit if args.limit is not None else 'ALL'})")
+    print("[REMINDER] In YAML set: with_reid: True and model: osnet (NOT auto).")
 
-    for video_folder in video_folders:
-        vid = int(video_folder.name)
-        video_path = video_folder / "img1"
+    for vf in video_folders:
+        vid = int(vf.name)
+        video_path = vf / "img1"
         print(f"[INFO] Predicting from folder: {video_path}")
 
-        output_txt_path = out_base_path / f"tracking_{vid}_12.txt"
-        process_video(
-            video_path=video_path,
-            tracker=args.tracker,
-            out_path=output_txt_path,
-            model=model,
-            device=device,
-            conf=args.conf,
-            iou=args.iou,
-            show=args.show,
-            max_det=args.max_det,
-        )
-
+        out_path = out_base / f"tracking_{vid}_12.txt"
+        process_video(video_path, args.tracker, out_path, model, device_det, args.conf, args.iou, args.show, args.max_det)
 
 if __name__ == "__main__":
     main()
