@@ -7,3 +7,4 @@ matplotlib>=3.7
 lap>=0.5.12
 pandas
 git+https://github.com/KaiyangZhou/deep-person-reid.git#egg=torchreid
+trackeval
