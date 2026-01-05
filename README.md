@@ -30,7 +30,10 @@ Il progetto implementa una pipeline completa per il **tracking** dei giocatori e
 📊 Dataset & Pre-processing
 
 ### Dataset (SoccerNet Tracking 2023)
-Il dataset di training è stato scaricato tramite **SoccerNet Downloader** (task `tracking-2023`).
+Il dataset di training è stato scaricato tramite **SoccerNet Downloader** (task `tracking-2023`). 
+La cartella contente i dati non è versionata: per scaricare i dati utilizzati per la challenge, 
+sono presenti gli script download.py ed extract.py nella cartella `data_tools/`.
+
 
 **Struttura tipica (train):**
 
