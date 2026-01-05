@@ -1,11 +1,11 @@
-# Artificial Vision Contest — Team Repo ⚽👁️
+# Artificial Vision Contest — Team Repo 
 
 Repository di lavoro per l’**Artificial Vision Contest** su SoccerNet.
 Il progetto implementa una pipeline completa per il **tracking** dei giocatori e la **behavior analysis** (conteggio giocatori in 2 specifiche ROI).
 
 ---
 
-## 📂 Struttura del Progetto
+##  Struttura del Progetto
 
 - `notebooks/` — notebook di tracking/training e run end-to-end
   - `track.ipynb`
@@ -27,7 +27,7 @@ Il progetto implementa una pipeline completa per il **tracking** dei giocatori e
 
 ---
 
-📊 Dataset & Pre-processing
+ Dataset & Pre-processing
 
 ### Dataset (SoccerNet Tracking 2023)
 Il dataset di training è stato scaricato tramite **SoccerNet Downloader** (task `tracking-2023`). 
@@ -48,7 +48,7 @@ preprocessing_ball.py, distribute_roi.py, generate_behavior.py.
 
 Questo flusso prepara i video per l’analisi e li rinumera in modo consistente da 1 a N (dove N è il numero massimo di video), rendendoli pronti per il tracking e la behavior analysis.
 
-**🚀 Esecuzione Pipeline**
+** Esecuzione Pipeline**
 1. Esecuzione da CLI:
 Lo script principale è scripts/pipeline.py.
 
@@ -60,7 +60,7 @@ Lo script principale è scripts/pipeline.py.
 
 ---
 
-## 🎮 Simulazione e Convenzioni Output
+##  Simulazione e Convenzioni Output
 
 ### Avvio Simulazione (SIMULATOR)
 1. Scaricare l’archivio dei risultati generato dalla pipeline (es. `.zip`).
@@ -82,16 +82,16 @@ I risultati di tracking e behavior devono seguire rigorosamente il seguente form
 
 ### Specifiche File
 
-#### 📍 Tracking (`tracking_K_XX.txt`)
+####  Tracking (`tracking_K_XX.txt`)
 Una riga per giocatore per frame.
 **Formato:** `frame_id, object_id, top_left_x, top_left_y, width, height`
 
-📋 Behavior (behavior_K_XX.txt)
+ Behavior (behavior_K_XX.txt)
 Due righe per frame (una per ROI). Formato: frame_id, region_id, n_players
 
 Nota: Un giocatore è considerato "dentro" una ROI se il centro della base della bounding box (footpoint) cade all'interno della ROI.
 
-🧠 Weights / Modelli
+ Weights / Modelli
 I pesi vengono salvati nella cartella weights/ (ignorata da Git). Per cambiare modello durante l'esecuzione, usare l'opzione:
 
 --weights weights/<file>.pt
