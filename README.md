@@ -1,89 +1,99 @@
-Artificial Vision Contest — Team Repo
+# Artificial Vision Contest — Team Repo ⚽👁️
 
-Repo di lavoro per il contest (tracking + behavior analysis) su SoccerNet.
+Repository di lavoro per l’**Artificial Vision Contest** su SoccerNet.
+Il progetto implementa una pipeline completa per il **tracking** dei giocatori e la **behavior analysis** (conteggio giocatori in 2 specifiche ROI).
 
-Struttura progetto (WIP)
+---
 
-scripts/ — script eseguibili (tracking, ecc.)
+## 📂 Struttura del Progetto
 
-tools/ — utility per gestione dati (download, unzip, ispezione)
+- `notebooks/` — notebook di tracking/training e run end-to-end
+  - `track.ipynb`
+  - `train_yolo11m_SoccerNet.ipynb`
+  - `Training_Osnet.ipynb`
+  - `run_pipeline.ipynb` — esecuzione pipeline end-to-end (es. Colab) *(in arrivo / da commitare)*
+- `data_tools/` — script per gestione dati (download, extract/unzip, ispezione, ecc.)
+- `scripts/` — script eseguibili
+  - `pipeline.py` — esegue l’intera pipeline end-to-end (tracking + behavior) in un solo comando
+- `configs/` — configurazioni tracker (ByteTrack/BoT-SORT) e componenti correlati
+- `data/` — dataset (**NON versionato**)
+- `weights/` — pesi modelli (**NON versionato**)
+- `SIMULATOR/` — cartella di supporto per la simulazione e la validazione locale
+  - `Predictions_folder/` — file di output della pipeline 
+  - `test_set/` — set di test per la simulazione
+  - `results/` — risultati prodotti dal simulator
 
-src/ — codice riusabile del progetto (in costruzione)
+> Nota: `data/`, `weights/`, `Predictions_folder/`,`test_set/`  non vengono versionate su Git.
 
-configs/ — configurazioni tracker (ByteTrack/BoT-SORT) e altro
+---
 
-data/ — dataset (NON versionato)
+📊 Dataset & Pre-processing
 
-outputs/ — risultati (NON versionato)
+### Dataset (SoccerNet Tracking 2023)
+Il dataset di training è stato scaricato tramite **SoccerNet Downloader** (task `tracking-2023`).
 
-weights/ — pesi modelli (NON versionato)
+**Struttura tipica (train):**
 
-Setup ambiente
+data/tracking-2023/train/SNMOT-XXX/img1/       # Cartella frame
+data/tracking-2023/train/SNMOT-XXX/gt/gt.txt   # Ground Truth
 
-Creazione venv dentro la repo:
+**Preparazione Test Set**
 
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+I video presenti in test_set/videos/ sono stati inseriti dopo un flusso di pre-processing composto dai seguenti script:
 
-Dati (SoccerNet Tracking 2023)
+preprocessing_ball.py, distribute_roi.py, generate_behavior.py.
 
-Dataset scaricato tramite SoccerNet Downloader, task tracking-2023.
+Questo flusso prepara i video per l’analisi e li rinumera in modo consistente da 1 a N (dove N è il numero massimo di video), rendendoli pronti per il tracking e la behavior analysis.
 
-Struttura tipica (train):
+**🚀 Esecuzione Pipeline**
+1. Esecuzione da CLI:
+Lo script principale è scripts/pipeline.py.
 
-data/tracking-2023/train/SNMOT-XXX/img1/ (750 frame)
+### 2. Esecuzione via Notebook (Colab)
+È disponibile il notebook `run_pipeline.ipynb`, che permette di:
+- Caricare una cartella con video di test direttamente da **Google Drive**.
+- Scaricare e utilizzare i pesi contenuti nel Drive della consegna.
+- Generare gli output finali ed esportarli in un archivio (es. `.zip`).
 
-data/tracking-2023/train/SNMOT-XXX/gt/gt.txt
+---
 
-Nota: spesso i file arrivano come .zip e vanno estratti manualmente (poi si può cancellare lo zip per risparmiare spazio).
+## 🎮 Simulazione e Convenzioni Output
 
-Tracking (baseline attuale)
+### Avvio Simulazione (SIMULATOR)
+1. Scaricare l’archivio dei risultati generato dalla pipeline (es. `.zip`).
+2. Estrarlo nella cartella `Predictions_folder` del **SIMULATOR**.
+3. **Input Video:** Assicurarsi che i video nella cartella `videos/` del simulatore siano numerati `1, 2, 3, ...`.
 
-Baseline:
+### Formato Output Richiesto
+I risultati di tracking e behavior devono seguire rigorosamente il seguente formato di nomenclatura:
 
-Detector: YOLO (Ultralytics)
+- **Tracking:** `tracking_K_XX.txt`
+- **Behavior:** `behavior_K_XX.txt`
 
-Tracker: ByteTrack / BoT-SORT via Ultralytics (model.track(...))
+**Legenda:**
+* `K` = Video ID (da 1 a 5)
+* `XX` = Numero del team a due cifre (es. Team 1 → `01`)
 
-Output attuale: formato MOT (10 colonne) per debugging locale
+**Esempi:**
+`tracking_1_01.txt`, `behavior_1_01.txt`
 
-Output contest: tracking_K_XX.txt (6 colonne) da implementare/allineare
+### Specifiche File
 
-Esempio run (una sequenza):
+#### 📍 Tracking (`tracking_K_XX.txt`)
+Una riga per giocatore per frame.
+**Formato:** `frame_id, object_id, top_left_x, top_left_y, width, height`
 
-python scripts/track.py `
-  --source "data/tracking-2023/train/SNMOT-060/img1" `
-  --tracker "configs/bytetrack.yaml" `
-  --out "outputs/mot/baseline/SNMOT-060.txt" `
-  --show
+📋 Behavior (behavior_K_XX.txt)
+Due righe per frame (una per ROI). Formato: frame_id, region_id, n_players
 
-Weights / Modelli utilizzati
+Nota: Un giocatore è considerato "dentro" una ROI se il centro della base della bounding box (footpoint) cade all'interno della ROI.
 
-I pesi sono salvati in weights/ (ignorata da Git).
-Per cambiare modello usa --weights weights/<file>.pt.
+🧠 Weights / Modelli
+I pesi vengono salvati nella cartella weights/ (ignorata da Git). Per cambiare modello durante l'esecuzione, usare l'opzione:
 
-YOLO weights
+--weights weights/<file>.pt
 
-yolov8m.pt
-Pesi ufficiali Ultralytics (download automatico tramite libreria ultralytics).
+🔗 Crediti / Fonti
+Dataset / Tools SoccerNet Tracking: https://github.com/SoccerNet/sn-tracking
 
-yolov8m-640-football-players.pt (football-specific, da testare/integrare)
-Preso dalla repo:
-
-Darkmyter/Football-Players-Tracking
-https://github.com/Darkmyter/Football-Players-Tracking.git
-
-Nota: quando si usano weights custom, controllare model.names e settare correttamente classes=[...] (escludendo eventuale “ball”).
-
-Crediti / Fonti
-
-Dataset: SoccerNet Tracking (sn-tracking)
-https://github.com/SoccerNet/sn-tracking
-
-Weights / riferimento pipeline football-specific:
-https://github.com/Darkmyter/Football-Players-Tracking.git
-
-TODO (breve)
-
- Implementare evaluation locale (HOTA) con TrackEval
+Repository di riferimento per i pesi football-specific: https://github.com/Darkmyter/Football-Players-Tracking
