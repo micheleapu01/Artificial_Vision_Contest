@@ -115,13 +115,13 @@ def keep_by_field(
     field_mask: np.ndarray,
     line_tol_px: int,
     bottom_strip_frac: float = 0.20,
-    min_strip_overlap: float = 0.30, # Aumentato default per sicurezza
+    min_strip_overlap: float = 0.30, 
 ) -> np.ndarray:
     """
     Logica Decisionale Rigorosa:
     1. Check punti chiave (sx, centro, dx) sui piedi.
     2. Se 'dt' (distanza bordo) <= line_tol_px -> KEEP (Salva il Guardalinee).
-    3. Fallback (Overlap) -> Usato SOLO se siamo disperati, ma qui lo teniamo stretto.
+    3. Fallback (Overlap) 
     """
     h0, w0 = bgr.shape[:2]
     hs, ws = field_mask.shape[:2]
@@ -129,8 +129,6 @@ def keep_by_field(
     sy = hs / max(h0, 1)
 
     # Distance Transform: Calcola distanza da pixel 0 (fuori campo) a pixel 1 (campo)
-    # Invertiamo: vogliamo distanza dai pixel neri (0) verso i bianchi? 
-    # No, vogliamo sapere quanto un pixel NERO dista dal BIANCO più vicino.
     # cv2.distanceTransform calcola distanza allo ZERO più vicino.
     # Quindi passiamo l'immagine INVERTITA (Field=0, Outside=1)
     # Così dt[y,x] = distanza dal campo.
@@ -172,13 +170,12 @@ def keep_by_field(
 
         # --- LOGICA DI DECISIONE GERARCHICA ---
         
-        # A. Sei in campo? -> SI
+        # A. Se è in campo si mantiene
         if is_inside:
             keep[i] = True
             continue
 
-        # B. Sei fuori ma entro la tolleranza (es. Guardalinee)? -> SI
-        #    Questo è il punto che salva il guardalinee ed elimina la riserva a 2m
+        # B. Se è fuori ma entro la tolleranza (es. Guardalinee) si mantiene
         if is_close_tolerance:
             keep[i] = True
             continue
@@ -186,7 +183,6 @@ def keep_by_field(
         # C. Fallback: Overlap Striscia
         #    Se line_tol è basso (es. 2), non vogliamo che questo fallback
         #    riporti dentro le riserve. Lo usiamo solo se overlap è molto alto.
-        #    (Opzionale: puoi commentarlo se vuoi essere severissimo)
         if True: 
             x1m = int(x1 * sx)
             x2m = int(x2 * sx)
@@ -201,7 +197,7 @@ def keep_by_field(
                 if strip.size > 0:
                     overlap = np.count_nonzero(strip) / strip.size
                     # Se min_strip_overlap è basso (0.05), ripeschi le riserve.
-                    # Manteniamolo onesto (es. 0.3 o quello passato da args)
+                    
                     if overlap >= min_strip_overlap:
                         keep[i] = True
 

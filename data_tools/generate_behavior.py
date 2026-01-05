@@ -30,7 +30,6 @@ def generate_gt_behavior(video_folder: Path):
     output_file = video_folder / "gt" / "behavior_gt.txt"
 
     if not gt_track_file.exists():
-        # Questo capita spesso (cartelle vuote o senza gt), non è critico
         return
     
     if not roi_file.exists():

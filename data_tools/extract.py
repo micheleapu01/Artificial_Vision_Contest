@@ -9,7 +9,7 @@ def has_single_top_folder(zf: zipfile.ZipFile):
 def main():
     root = Path("data")
     for z in root.rglob("*.zip"):
-        dest = z.with_suffix("")          # es: data/train
+        dest = z.with_suffix("")          
         dest.mkdir(parents=True, exist_ok=True)
 
         with zipfile.ZipFile(z) as zf:

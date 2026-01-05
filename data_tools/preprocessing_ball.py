@@ -37,7 +37,7 @@ def remove_ball_from_gt_and_copy(gameinfo_file, video_folder_path, output_folder
 
     if not ball_ids:
         print(f"[WARN] Nessun ball_id trovato in {gameinfo_file}")
-        # se vuoi SKIPPARE il video in questo caso, fai: return False
+        
 
     new_video_folder = os.path.join(output_folder, str(new_video_id))
     if os.path.exists(new_video_folder):

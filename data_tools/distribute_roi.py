@@ -18,8 +18,8 @@ def main():
 
     # 1. Controlli preliminari
     if not source_file.exists():
-        print(f"ERRORE: Non trovo il file sorgente: {source_file.resolve()}")
-        print("   Assicurati di aver creato il file 'roi.json' nella cartella corrente.")
+        print(f"ERRORE: file sorgente non trovato: {source_file.resolve()}")
+        print("Assicursi di aver creato il file 'roi.json' nella cartella corrente.")
         return
 
     if not videos_dir.exists():
@@ -31,9 +31,8 @@ def main():
     print("-" * 40)
 
     # 2. Trova le cartelle target (solo quelle numerate)
-    # Filtriamo p.name.isdigit() per evitare cartelle di sistema o cache
     target_folders = [p for p in videos_dir.iterdir() if p.is_dir() and p.name.isdigit()]
-    target_folders.sort(key=lambda x: int(x.name)) # Ordina numericamente 1, 2, 3...
+    target_folders.sort(key=lambda x: int(x.name)) # Ordina numericamente 
 
     if not target_folders:
         print("Nessuna cartella video numerata trovata!")

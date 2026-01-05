@@ -44,7 +44,7 @@ def _harmonic_mean_cost(d1: np.ndarray, d2: np.ndarray, eps: float = 1e-6) -> np
 
 
 # -----------------------------
-# OSNet ReID (returns NaN for unreliable crops)
+# OSNet ReID 
 # -----------------------------
 class ReID_OSNet:
     """
@@ -63,7 +63,7 @@ class ReID_OSNet:
             device=device,
         )
 
-        # Determina feature dim una volta per tutte (evita casi "tutte bbox piccole")
+        # Determina feature dim  
         dummy = np.zeros((256, 128, 3), dtype=np.uint8)
         with torch.no_grad():
             feat = self.extractor([dummy])  # (1, D)
@@ -120,7 +120,7 @@ class ReID_OSNet:
             for k, i in enumerate(valid_idx):
                 out[i] = feats[k]
 
-        # Sostituisci i None con NaN-vector (così poi li ignoriamo nel matching)
+        # Sostituisci i None con NaN-vector 
         nanvec = np.full((self.feat_dim,), np.nan, dtype=np.float32)
         out = [nanvec.copy() if v is None else v for v in out]
 
@@ -139,7 +139,7 @@ def patch_ultralytics_botsort_osnet(weights_path: str, model_name: str, device: 
 
 
 # -----------------------------
-# Patch BoT-SORT get_dists: sanitize NaNs and optional HM fusion
+# Patch BoT-SORT get_dists
 # -----------------------------
 def enable_botsort_sanitize_patch(use_hm: bool):
     from ultralytics.trackers import bot_sort
@@ -154,7 +154,7 @@ def enable_botsort_sanitize_patch(use_hm: bool):
 
         if getattr(self.args, "with_reid", False) and getattr(self, "encoder", None) is not None:
             emb_dists = matching.embedding_distance(tracks, detections) / 2.0
-            # IMPORTANT: NaN/inf -> 1.0 so ReID is ignored when crop is unreliable
+            #  NaN/inf -> 1.0 così ReID è ignorato quando il crop è poco affidabile
             emb_dists = np.nan_to_num(emb_dists, nan=1.0, posinf=1.0, neginf=1.0)
 
             emb_dists[emb_dists > (1 - self.appearance_thresh)] = 1.0
@@ -278,7 +278,7 @@ def main():
         video_folders = video_folders[:args.limit]
 
     print(f"[INFO] Processing {len(video_folders)} videos (limit={args.limit if args.limit is not None else 'ALL'})")
-    print("[REMINDER] In YAML set: with_reid: True and model: osnet (NOT auto).")
+    print("[REMINDER] In YAML set: with_reid: True and model: osnet.")
 
     for vf in video_folders:
         vid = int(vf.name)

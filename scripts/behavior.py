@@ -5,7 +5,8 @@ import re
 import statistics
 
 IMG_W, IMG_H = 1920, 1080
-
+TEAM_ID = 12
+TEAM = f"{TEAM_ID:02d}"
 def pick_video_id(folder: Path, fallback_idx: int) -> int:
     if folder.name.isdigit():
         return int(folder.name)
@@ -63,7 +64,6 @@ def apply_median_filter(data_list, window_size):
         
         chunk = data_list[start:end]
         # Calcola la mediana e la forza a intero
-        # (median_high o int(median) va bene per i conteggi)
         med_val = int(statistics.median(chunk))
         filtered.append(med_val)
         
@@ -74,7 +74,6 @@ def main():
     ap.add_argument("--source", required=True, help="Test folder containing video folders")
     ap.add_argument("--tracking-dir", required=True, help="Folder with tracking_K_XX.txt files")
     ap.add_argument("--out", required=True, help="Output folder for behavior_K_XX.txt")
-    ap.add_argument("--team", required=True, help="Team id with 2 digits, e.g. 01, 12")
     ap.add_argument("--roi-name", default="roi.json", help="ROI filename inside each video folder")
     ap.add_argument("--frames", type=int, default=750)
     ap.add_argument("--limit", type=int, default=None)
@@ -103,7 +102,7 @@ def main():
         roi1 = (r1_rel[0] * IMG_W, r1_rel[1] * IMG_H, r1_rel[2] * IMG_W, r1_rel[3] * IMG_H)
         roi2 = (r2_rel[0] * IMG_W, r2_rel[1] * IMG_H, r2_rel[2] * IMG_W, r2_rel[3] * IMG_H)
 
-        track_path = tracking_dir / f"tracking_{K}_{args.team}.txt"
+        track_path = tracking_dir / f"tracking_{K}_{TEAM}.txt"
         if not track_path.exists():
             print(f"[WARN] Missing tracking file: {track_path}, skipping...")
             continue
@@ -134,7 +133,7 @@ def main():
         smooth_counts_2 = apply_median_filter(raw_counts_2, args.window)
 
         # 3. Scriviamo i risultati filtrati
-        out_path = out_dir / f"behavior_{K}_{args.team}.txt"
+        out_path = out_dir / f"behavior_{K}_{TEAM}.txt"
         with out_path.open("w", encoding="utf-8") as f:
             for i in range(args.frames):
                 frame_idx = i + 1

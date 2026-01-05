@@ -1,11 +1,11 @@
 tracker_type: botsort
-track_high_thresh: 0.60   # <--- MODIFICATO (Era 0.6)
-track_low_thresh: 0.09    # <--- MODIFICATO (Era 0.15)
-new_track_thresh: 0.65   # <--- MODIFICATO (Era 0.7)
-track_buffer: 100        # OTTIMO (4 secondi di memoria per occlusioni)
-match_thresh: 0.85        # Va bene, ma se perdi ID sui scatti veloci abbassa a 0.7
-fuse_score: False         # OK
-gmc_method: sparseOptFlow # FONDAMENTALE per il calcio (compensa la telecamera)
-proximity_thresh: 0.45    # <--- MODIFICATO (Era 0.45)
-appearance_thresh: 0.2   # Ininfluente con with_reid: False
-with_reid: False         # <--- Confermato
+track_high_thresh: 0.60   
+track_low_thresh: 0.09    
+new_track_thresh: 0.65   
+track_buffer: 100        
+match_thresh: 0.85        
+fuse_score: False         
+gmc_method: sparseOptFlow 
+proximity_thresh: 0.45    
+appearance_thresh: 0.2   
+with_reid: False         

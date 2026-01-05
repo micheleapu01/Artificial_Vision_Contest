@@ -47,7 +47,7 @@ def main():
     ap.add_argument("--area-max", type=float, default=0.98)
     ap.add_argument("--conf-keep-outside", type=float, default=0.0)
 
-    # opzionali
+    
     ap.add_argument("--max-frames", type=int, default=0, help="0 = tutti, altrimenti limita i frame per debug veloce")
     args = ap.parse_args()
 
